@@ -27,10 +27,12 @@ let exampleStr: String = "Hello World"
 let exampleArray: [Int] = [1, 2, 3, 4, 5, 6]
 
 ///use the method `packItems' to pack 
-let msgPackedBytes: NSData = packItems([exampleInt, exampleStr, exampleArray]) //this will be the packed data
+
+//this will be the packed data
+let msgPackedBytes: NSData = packItems([exampleInt, exampleStr, exampleArray]) 
 ```
 
-Or you can pack it individually add add them to a byte array manually (Which is also less expensive) 
+**Or you can pack it individually add add them to a byte array manually (Which is also less expensive)**
 
 ```swift
 let exampleInt: Int = 1
@@ -38,10 +40,12 @@ let exampleStr: String = "Hello World"
 let exampleArray: [Int] = [1, 2, 3, 4, 5, 6]
 
 //Now pack them idividually
-let packedInt = exampleInt.pack)(
-let packedStr = exampleStr.pack(withEncoding: NSASCIIStringEncoding) //if you don't specifiy encoding, means when you use it as `exampleStr.pack()`, the default encoding will be ASCII
+let packedInt = exampleInt.pack()
+
+//if you didn't specifiy encoding, means when you use it as `exampleStr.pack()`, the default encoding will be ASCII
+let packedStr = exampleStr.pack(withEncoding: NSASCIIStringEncoding) 
+
 let packedArray = exampleArray.pack()
-//
 let msgPackedBytes: NSData = packedInt.byte_array + packedStr.byte_array + packedArray.byte_array
 ```
 ## Unpack
@@ -53,13 +57,16 @@ do {
 let unpackedItems = try msgPackedBytes.unpack()
 //instead of casting the NSData to the type you want, you can call these `.castTo..` methods to do the job for you
 let int: Int = unpackedItems[0].castToInt()
-let str: String = unpackedItems[1].castToString() //Same as packing, you can also specify the encoding you want to use, default is ASCII
+
+//Same as packing, you can also specify the encoding you want to use, default is ASCII
+let str: String = unpackedItems[1].castToString() 
 let arry: NSArray = unpackedItems[2].castToArray() 
 } catch let error as NSError{
 NSLog("Error occurs during unpacking: %@", error)
 }
 ```
-If you don't want to unpack every single thing included in the message-pack byte array, you can also specify an amount to unpack, if you want to keep the remaining bytes, you can put `true` in the `returnRemainingBytes` argument, the remaining bytes will stored in the end of the `NSData` array.
+**If you don't want to unpack every single thing included in the message-pack byte array, you can also specify an amount to unpack, if you want to keep the remaining bytes, you can put `true` in the `returnRemainingBytes` argument, the remaining bytes will stored in the end of the `NSData` array.**
+
 ```swift
 do {
 //Unpack only 2 objects, and we are not interested in remaining bytes
