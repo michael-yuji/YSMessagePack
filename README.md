@@ -13,7 +13,7 @@ beta - 0.1
 
 ## Installation
 
-Simply add the files under the directory below to your project                                                                                                                                                                                                                                                                  
+Simply add files under the directory below to your project                                                                                                                                                                                                                                                                  
 ```url
 MessagePack/src
 ```
@@ -26,13 +26,12 @@ let exampleInt: Int = 1
 let exampleStr: String = "Hello World"
 let exampleArray: [Int] = [1, 2, 3, 4, 5, 6]
 
-///use the method `packItems' to pack 
-
+//use the method `packItems' to pack 
 //this will be the packed data
 let msgPackedBytes: NSData = packItems([exampleInt, exampleStr, exampleArray]) 
 ```
 
-**Or you can pack it individually add add them to a byte array manually (Which is also less expensive)**
+**Or you can pack them individually and add them to a byte array manually (Which is also less expensive)**
 
 ```swift
 let exampleInt: Int = 1
@@ -42,14 +41,14 @@ let exampleArray: [Int] = [1, 2, 3, 4, 5, 6]
 //Now pack them idividually
 let packedInt = exampleInt.pack()
 
-//if you didn't specifiy encoding, means when you use it as `exampleStr.pack()`, the default encoding will be ASCII
+//if you didn't specifiy encoding, the default encoding will be ASCII
 let packedStr = exampleStr.pack(withEncoding: NSASCIIStringEncoding) 
 
 let packedArray = exampleArray.pack()
 let msgPackedBytes: NSData = packedInt.byte_array + packedStr.byte_array + packedArray.byte_array
 ```
 ## Unpack
-Unpacking a messagePacked byte array is also very esay:
+Unpack a messagePacked byte array is also very easy:
 
 ```swift
 do {
@@ -60,7 +59,7 @@ let int: Int = unpackedItems[0].castToInt()
 
 //Same as packing, you can also specify the encoding you want to use, default is ASCII
 let str: String = unpackedItems[1].castToString() 
-let arry: NSArray = unpackedItems[2].castToArray() 
+let array: NSArray = unpackedItems[2].castToArray() 
 } catch let error as NSError{
 NSLog("Error occurs during unpacking: %@", error)
 }
