@@ -52,27 +52,27 @@ Unpack a messagePacked byte array is also very easy:
 
 ```swift
 do {
-//The unpack method will return an array of NSData which each element is an unpacked object
-let unpackedItems = try msgPackedBytes.unpack()
-//instead of casting the NSData to the type you want, you can call these `.castTo..` methods to do the job for you
-let int: Int = unpackedItems[0].castToInt()
+    //The unpack method will return an array of NSData which each element is an unpacked object
+    let unpackedItems = try msgPackedBytes.unpack()
+    //instead of casting the NSData to the type you want, you can call these `.castTo..` methods to do the job for you
+    let int: Int = unpackedItems[0].castToInt()
 
-//Same as packing, you can also specify the encoding you want to use, default is ASCII
-let str: String = unpackedItems[1].castToString() 
-let array: NSArray = unpackedItems[2].castToArray() 
+    //Same as packing, you can also specify the encoding you want to use, default is ASCII
+    let str: String = unpackedItems[1].castToString() 
+    let array: NSArray = unpackedItems[2].castToArray() 
 } catch let error as NSError{
-NSLog("Error occurs during unpacking: %@", error)
+    NSLog("Error occurs during unpacking: %@", error)
 }
 ```
 **If you don't want to unpack every single thing included in the message-pack byte array, you can also specify an amount to unpack, if you want to keep the remaining bytes, you can put `true` in the `returnRemainingBytes` argument, the remaining bytes will stored in the end of the `NSData` array.**
 
 ```swift
 do {
-//Unpack only 2 objects, and we are not interested in remaining bytes
-let unpackedItems = try msgPackedBytes.unpack(specific_amount: 2, returnRemainingBytes: false)
-print(unpackedItems.count) //will print 2
+    //Unpack only 2 objects, and we are not interested in remaining bytes
+    let unpackedItems = try msgPackedBytes.unpack(specific_amount: 2, returnRemainingBytes: false)
+    print(unpackedItems.count) //will print 2
 } catch let error as NSError{
-NSLog("Error occurs during unpacking: %@", error)
+    NSLog("Error occurs during unpacking: %@", error)
 }
 ```
 
