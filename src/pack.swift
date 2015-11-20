@@ -113,7 +113,7 @@ extension Bool {
 
 //MARK: String
 extension StringLiteralType {
-    public func pack(withEncoding encoding: NSStringEncoding) throws -> NSData?
+    func pack(withEncoding encoding: NSStringEncoding) throws -> NSData?
     {
         let data    = self.dataUsingEncoding(encoding)
         if data     == nil {throw PackingError.dataEncodingError}
@@ -264,7 +264,7 @@ extension NSData {
 //MARK: Dictionary/Map
 extension NSDictionary
 {
-    public func pack() -> NSData
+    func pack() -> NSData
     {
         var byteArray = ByteArray()
         
@@ -310,7 +310,7 @@ extension NSDictionary
 
 extension Dictionary
 {
-    public func pack() -> NSData
+    func pack() -> NSData
     {
         var byteArray = ByteArray()
         
@@ -361,7 +361,7 @@ extension Dictionary
 //MARK: Array
 extension NSArray
 {
-    public func pack() -> NSData
+    func pack() -> NSData
     {
         var byteArray = ByteArray()
         
@@ -406,7 +406,7 @@ extension NSArray
 
 extension Array
 {
-    public func pack() -> NSData
+    func pack() -> NSData
     {
         var byteArray = ByteArray()
         

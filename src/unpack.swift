@@ -9,7 +9,7 @@ extension NSData {
      - Parameter returnRemainingBytes: Return remaining bytes if error occurs or reached specified amount of unpacked objects, remaining bytes will be the last object in the returning array, default is `false`
      - returns: An `NSData` array packed with unpacked data, if return_remainingBytes is `ture`, the remaining bytes will store as the last object in the array
      */
-    public func unpack(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> [NSData] {
+    func unpack(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> [NSData] {
         var length: Int = 0
         do {
             return try unpack(specific_amount: amount, return_remainingBytes: returnRemainingBytes, dataLengthOutput: &length).0
@@ -24,7 +24,7 @@ extension NSData {
      - Parameter returnRemainingBytes: Return remaining bytes if error occurs or reached specified amount of unpacked objects, remaining bytes will be the last object in the returning array, default is `false`
      - returns: A duple of an `NSData` array packed with unpacked data and an array of `[DataType]` which contains corresponding type for each data in `[NSData]` unpacked, if return_remainingBytes is `ture`, the  remaining bytes will store as the last object in the array
      */
-    public func unpack_(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> (data: [NSData], type: [DataType]) {
+    func unpack_(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> (data: [NSData], type: [DataType]) {
         var length: Int = 0
         do {
             return try unpack(specific_amount: amount, return_remainingBytes: returnRemainingBytes, dataLengthOutput: &length)
@@ -38,7 +38,7 @@ extension NSData {
      - Parameter amount: Specific the amount of data going to unpack, the unpacking will stop at specified amount. Left it to `nil` will automatically unpack all the data
      - Parameter returnRemainingBytes: Return remaining bytes if error occurs or reached specified amount of unpacked objects, remaining bytes will be the last object in the returning array, default is `false`
      - returns:  An array of duples contain an unpacked data as `NSData` and its type as `DataType`, if return_remainingBytes is `ture`, the  remaining bytes will store as the last object in the array     */
-    public func unpack__(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> [(data: NSData, type: DataType)] {
+    func unpack__(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> [(data: NSData, type: DataType)] {
         var length: Int = 0
         do {
             var temp: [(data:  NSData, type: DataType)] = []

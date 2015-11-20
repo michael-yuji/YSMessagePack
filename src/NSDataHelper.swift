@@ -10,7 +10,7 @@ import Foundation
 
 import Foundation
 
-public extension NSData {
+extension NSData {
     
     ///Return the byte array of self
     func byteArrayValue() -> ByteArray {

@@ -8,9 +8,9 @@
 
 import Foundation
 
-public typealias ByteArray      = [UInt8]
+typealias ByteArray      = [UInt8]
 
-public extension Array
+extension Array
 {
     func dataValue() -> NSData {return NSData(bytes: self, length: self.count)}
     
