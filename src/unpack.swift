@@ -130,7 +130,8 @@ extension NSData {
         let _64bitDataSize        =     8
         
         
-        for (i; i < byte_array.count;) {
+//        for (i; i < byte_array.count;) {
+        while (i < byte_array.count) {
             var shift: Int!, dataSize: Int!
             var type: DataType = .fixstr
             var time_to_break: Bool = false

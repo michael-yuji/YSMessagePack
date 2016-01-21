@@ -70,9 +70,23 @@ extension NSData {
         return NSKeyedUnarchiver.unarchiveObjectWithData(self) as? NSArray
     }
     
+    var castToBool: Bool? {
+        return Bool.init(self.castToInt)
+    }
+    
+    func castToStringArray(withEncoding encoding: NSStringEncoding = NSASCIIStringEncoding) -> [String?] {
+        return self.castToArray!.map({($0 as! NSData).castToString(withEncoding: encoding)})
+    }
+    
     ///Cast data into NSDictionary according to its byte_array value
     var castToDictionary: NSDictionary? {
         return NSKeyedUnarchiver.unarchiveObjectWithData(self) as? NSDictionary
+    }
+    
+    public var castToUInt64: UInt64 {
+        var int_value: UInt64 = 0
+        self.getBytes(&int_value, length: sizeof(UInt64))
+        return int_value
     }
     
     /**Joint two data into one by adding another data to the tail of the first's ([data][with])

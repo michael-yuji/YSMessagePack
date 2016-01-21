@@ -8,18 +8,23 @@
 
 import Foundation
 
+/**Pack items in the array by each's type and map into a single byte-array
+ - Warning: DO NOT INCLUDE BOOL TYPE OR THE BOOL WILL PACK AS AN INT VALUE
+ - parameter thingsToPack: an array of objects you want to pack
+ - parameter withOptions packing options
+ */
 func packItems(things_to_pack: [AnyObject], withOptions options: packOptions = [.PackWithASCIIStringEncoding]) -> NSData {
     var byteArray = ByteArray()
     
     for item in things_to_pack
     {
+        print(item)
         pack_any_type(&byteArray, item: item, options: options)
     }
     return byteArray.dataValue()
 }
 
 private func pack_any_type<T>(inout byteArray: [UInt8], item: T?, options: packOptions = [.PackWithASCIIStringEncoding]) {
-    
     switch item
     {
     case is String:
@@ -35,7 +40,6 @@ private func pack_any_type<T>(inout byteArray: [UInt8], item: T?, options: packO
         try! byteArray += str.pack(withEncoding: encoding)!.byteArrayValue()
         
     case is Int, is Int8, is Int16, is Int32, is Int64:
-
         var int = item as! Int
         if options.rawValue & packOptions.PackAllPossitiveIntAsUInt.rawValue != 0 || options.rawValue & packOptions.PackIntegersAsUInt.rawValue != 0 {
             if int >= 0 {
@@ -46,18 +50,16 @@ private func pack_any_type<T>(inout byteArray: [UInt8], item: T?, options: packO
                 }
             }
         }
-        byteArray += int.optimizedPack().byteArrayValue()
+        byteArray += int.pack().byteArrayValue()
         
     case is UInt, is UInt8, is UInt16, is UInt32, is UInt64:
-        print("uint")
-        let uint = item as! UInt
-        byteArray += uint.optimizedPack().byteArrayValue()
+        let uint = item as! UInt64
+        byteArray += uint.pack().byteArrayValue()
         
     case is Float32, is Float64:
         byteArray += (item as! Double).pack().byteArrayValue()
         
     case is NSData:
-        
         byteArray += (item as! NSData).pack().byteArrayValue()
         
     case is [AnyObject]:
@@ -72,11 +74,11 @@ private func pack_any_type<T>(inout byteArray: [UInt8], item: T?, options: packO
     case is Float64:
         byteArray += (item as! Float64).pack().byteArrayValue()
     
+//    case is BooleanLiteralType:
+//        byteArray += (item as! Bool).pack().byteArrayValue()
+        
     case nil:
         byteArray += [0xc0]
-        
-    case is Bool:
-        byteArray += (item as! Bool).pack().byteArrayValue()
         
     default: break
     }
@@ -91,7 +93,7 @@ private func size_after_pack_calculator<T>(item_to_switch: T) -> Int {
         
     case is Int:
         let int = item_to_switch as! Int
-        try! i += int.optimizedPack().byteArrayValue().count
+        try! i += int.pack().byteArrayValue().count
         
     case is NSData:
         i += (item_to_switch as! NSData).byteArrayValue().count
@@ -154,7 +156,7 @@ extension StringLiteralType {
 //MARK: Integers
 extension UnsignedIntegerType
 {
-    func optimizedPack() -> NSData
+    func pack() -> NSData
     {
         var value  = self
         var param: (prefix: UInt8, size: size_t)!
@@ -178,7 +180,7 @@ extension UnsignedIntegerType
 
 
 extension SignedIntegerType {
-    func optimizedPack() -> NSData
+    func pack() -> NSData
     {
         
         var value  = self
@@ -239,7 +241,7 @@ extension NSData {
     func pack() -> NSData
     {
         var prefix: UInt8!
-        var temp = self.length.optimizedPack().byteArrayValue()
+        var temp = self.length.pack().byteArrayValue()
         
         #if arch(arm) || arch(i386)
             switch self.length {
@@ -345,7 +347,7 @@ extension Dictionary
                 
             case is Int:
                 let int = value as! Int
-                try! byteArray += int.optimizedPack().byteArrayValue()
+                try! byteArray += int.pack().byteArrayValue()
                 
             case is NSData:
                 byteArray += (value as! NSData).byteArrayValue()

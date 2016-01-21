@@ -26,7 +26,8 @@ let exampleInt: Int = 1
 let exampleStr: String = "Hello World"
 let exampleArray: [Int] = [1, 2, 3, 4, 5, 6]
 
-//use the method `packItems' to pack 
+//use the method `packItems` to pack 
+//Warning: DO NOT USE PACKITEMS TO PACK BOOLEAN TYPES SINCE IT WILL PACK AS INT
 //this will be the packed data
 let msgPackedBytes: NSData = packItems([exampleInt, exampleStr, exampleArray]) 
 ```

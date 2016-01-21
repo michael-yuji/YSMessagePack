@@ -48,9 +48,9 @@ extension Int {
     var _32_bit_array: ByteArray {
         get {
             return ByteArray(arrayLiteral:  UInt8((self >> 24)                       ),
-                UInt8((self >> 16) ^ (self >> 24) * 0x100),
-                UInt8((self >> 8 ) ^ (self >> 16) * 0x100),
-                UInt8 (self        ^ (self >>  8) * 0x100)
+                                            UInt8((self >> 16) ^ (self >> 24) * 0x100),
+                                            UInt8((self >> 8 ) ^ (self >> 16) * 0x100),
+                                            UInt8 (self        ^ (self >>  8) * 0x100)
             )
         }
     }
