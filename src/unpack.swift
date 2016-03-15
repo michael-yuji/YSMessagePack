@@ -24,7 +24,7 @@ extension NSData {
      - Parameter returnRemainingBytes: Return remaining bytes if error occurs or reached specified amount of unpacked objects, remaining bytes will be the last object in the returning array, default is `false`
      - returns: A duple of an `NSData` array packed with unpacked data and an array of `[DataType]` which contains corresponding type for each data in `[NSData]` unpacked, if return_remainingBytes is `ture`, the  remaining bytes will store as the last object in the array
      */
-    func unpack_(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> (data: [NSData], type: [DataType]) {
+    func unpackReturnAsDupleOfDataDataTypeArray(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> (data: [NSData], type: [DataTypes]) {
         var length: Int = 0
         do {
             return try unpack(specific_amount: amount, return_remainingBytes: returnRemainingBytes, dataLengthOutput: &length)
@@ -38,10 +38,10 @@ extension NSData {
      - Parameter amount: Specific the amount of data going to unpack, the unpacking will stop at specified amount. Left it to `nil` will automatically unpack all the data
      - Parameter returnRemainingBytes: Return remaining bytes if error occurs or reached specified amount of unpacked objects, remaining bytes will be the last object in the returning array, default is `false`
      - returns:  An array of duples contain an unpacked data as `NSData` and its type as `DataType`, if return_remainingBytes is `ture`, the  remaining bytes will store as the last object in the array     */
-    func unpack__(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> [(data: NSData, type: DataType)] {
+    func unpackReturnAsArrayOfDataTypeDataDuple(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> [(data: NSData, type: DataTypes)] {
         var length: Int = 0
         do {
-            var temp: [(data:  NSData, type: DataType)] = []
+            var temp: [(data:  NSData, type: DataTypes)] = []
             let (data, type) = try unpack(specific_amount: amount, return_remainingBytes: returnRemainingBytes, dataLengthOutput: &length)
             for (index, data) in data.enumerate() {
                 temp.append((data: data, type: type[index]))
@@ -51,16 +51,6 @@ extension NSData {
             throw error
         }
     }
-    
-    //=============================================//
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //=============================================//
     
     /**
     This method is only used for unpack a message pack array object
@@ -118,11 +108,11 @@ extension NSData {
     - Parameter dataLengthOutout: the length (of bytes) of the unpacker handled will output to here
     - returns: An `NSData` array packed with unpacked data, if return_remainingBytes is `ture`, the remaining bytes will store as the last object in the array
     */
-    private func unpack(specific_amount amount: Int? = nil, return_remainingBytes: Bool = false, inout dataLengthOutput len: Int) throws -> ([NSData], [DataType])
+    private func unpack(specific_amount amount: Int? = nil, return_remainingBytes: Bool = false, inout dataLengthOutput len: Int) throws -> ([NSData], [DataTypes])
     {
         var byte_array: ByteArray = self.byteArrayValue()
         var packedObjects         = [NSData]()
-        var dataTypes             = [DataType]()
+        var dataTypes             = [DataTypes]()
         var i: Int                =     0
         let _singleByteSize       =     1
         let _8bitDataSize         =     1
@@ -130,11 +120,9 @@ extension NSData {
         let _32bitDataSize        =     4
         let _64bitDataSize        =     8
         
-        
-//        for (i; i < byte_array.count;) {
         while (i < byte_array.count) {
             var shift: Int!, dataSize: Int!
-            var type: DataType = .fixstr
+            var type: DataTypes = .fixstr
             var time_to_break: Bool = false
             var continue_           = false
             var controlFlowState: control_flow = .None
@@ -267,6 +255,7 @@ extension NSData {
                 let data                    = NSData.parsePackedMap(self, index: i + 1, count: count, length: &length)
                 try checkIfEnd(data, shift: length + 1)
                 dataTypes.append(.fixmap)
+                
             case 0xde:
                 let count                   = _16bitMarkupDataSize
                 var length: Int             = 0
@@ -282,8 +271,6 @@ extension NSData {
             default: throw UnpackingError.UnknownDataType_undifined_prefix
             }
             
-            dataTypes.append(type)
-            
             if case controlFlowState = control_flow.Break {
                 break
             }
@@ -291,6 +278,8 @@ extension NSData {
             if case controlFlowState = control_flow.Continue {
                 continue
             }
+            
+            dataTypes.append(type)
             
             shift = try type.getDataPrefixSize()
             var temp: ByteArray     = ByteArray(count: dataSize, repeatedValue: 0)

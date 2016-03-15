@@ -13,12 +13,12 @@ import Foundation
  - parameter thingsToPack: an array of objects you want to pack
  - parameter withOptions packing options
  */
+
 func packItems(things_to_pack: [AnyObject], withOptions options: packOptions = [.PackWithASCIIStringEncoding]) -> NSData {
     var byteArray = ByteArray()
     
     for item in things_to_pack
     {
-//        print(item)
         pack_any_type(&byteArray, item: item, options: options)
     }
     return byteArray.dataValue()
@@ -73,9 +73,6 @@ private func pack_any_type<T>(inout byteArray: [UInt8], item: T?, options: packO
         
     case is Float64:
         byteArray += (item as! Float64).pack().byteArrayValue()
-    
-//    case is BooleanLiteralType:
-//        byteArray += (item as! Bool).pack().byteArrayValue()
         
     case nil:
         byteArray += [0xc0]
@@ -367,14 +364,13 @@ extension NSArray
     func pack() -> NSData
     {
         var byteArray = ByteArray()
-//        print(self.count)
+
         #if arch(arm) || arch(i386)
             switch self.count {
             case 0...15:
                 byteArray.append(UInt8(0b10010000 | self.count))
             case 16...0xffff:
                 byteArray.append(0xdc)
-                print(self.count._16_bit_array)
                 byteArray += self.count._16_bit_array
             default: break
             }
