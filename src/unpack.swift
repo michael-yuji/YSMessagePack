@@ -75,8 +75,9 @@ extension NSData {
     {
         var temp_byte_array: ByteArray  = bytes.byteArrayValue()        //byte array representation of data
         temp_byte_array.removeRange(Range<Int>(start: 0, end: index))   //remove the bytes before the index
+        
         let data_buffer                 = try? temp_byte_array.dataValue().unpack(specific_amount: count, return_remainingBytes: false, dataLengthOutput: &length).0
-        print(data_buffer)
+        
         return (data_buffer == nil) ? nil : NSKeyedArchiver.archivedDataWithRootObject(data_buffer! as NSArray)
     }
     
@@ -244,12 +245,15 @@ extension NSData {
                 let data                   = NSData.parsePackedArray(self, index: i + 1, count: count, length: &length)
                 try checkIfEnd(data, shift: length + 1)
                 dataTypes.append(.fixarray)
+                
+                
             case 0xdc:
                 let count                   = _16bitMarkupDataSize
                 var length: Int             = 0
                 let data                    = NSData.parsePackedArray(self, index: i + 1 + 2, count: count, length: &length)
-                try checkIfEnd(data, shift: length + 2)
+                try checkIfEnd(data, shift: length + 1 + 2)
                 dataTypes.append(.array16)
+                
             case 0xdd:
                 let count                   = _32bitMarkupDataSize
                 var length: Int             = 0

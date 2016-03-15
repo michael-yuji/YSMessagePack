@@ -18,7 +18,7 @@ func packItems(things_to_pack: [AnyObject], withOptions options: packOptions = [
     
     for item in things_to_pack
     {
-        print(item)
+//        print(item)
         pack_any_type(&byteArray, item: item, options: options)
     }
     return byteArray.dataValue()
@@ -93,7 +93,8 @@ private func size_after_pack_calculator<T>(item_to_switch: T) -> Int {
         
     case is Int:
         let int = item_to_switch as! Int
-        try! i += int.pack().byteArrayValue().count
+    
+        i += int.pack().byteArrayValue().count
         
     case is NSData:
         i += (item_to_switch as! NSData).byteArrayValue().count
@@ -347,7 +348,7 @@ extension Dictionary
                 
             case is Int:
                 let int = value as! Int
-                try! byteArray += int.pack().byteArrayValue()
+                byteArray += int.pack().byteArrayValue()
                 
             case is NSData:
                 byteArray += (value as! NSData).byteArrayValue()
@@ -366,13 +367,14 @@ extension NSArray
     func pack() -> NSData
     {
         var byteArray = ByteArray()
-        
+//        print(self.count)
         #if arch(arm) || arch(i386)
             switch self.count {
             case 0...15:
                 byteArray.append(UInt8(0b10010000 | self.count))
             case 16...0xffff:
                 byteArray.append(0xdc)
+                print(self.count._16_bit_array)
                 byteArray += self.count._16_bit_array
             default: break
             }
@@ -418,6 +420,7 @@ extension Array
                 byteArray.append(UInt8(0b10010000 | self.count))
             case 16...0xffff:
                 byteArray.append(0xdc)
+                p
                 byteArray += self.count._16_bit_array
             default: break
             }
