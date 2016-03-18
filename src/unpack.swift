@@ -246,7 +246,7 @@ extension NSData {
                 let count                   = _32bitMarkupDataSize
                 var length: Int             = 0
                 let data                    = NSData.parsePackedArray(self, index: i + 1 + 4, count: count, length: &length)
-                try checkIfEnd(data, shift: length + 4)
+                try checkIfEnd(data, shift: length + 1 + 4)
                 dataTypes.append(.array32)
                 //map
             case 0b10000000...0b10001111:
@@ -259,14 +259,14 @@ extension NSData {
             case 0xde:
                 let count                   = _16bitMarkupDataSize
                 var length: Int             = 0
-                let data                    = NSData.parsePackedArray(self, index: i + 1 + 2, count: count, length: &length)
-                try checkIfEnd(data, shift: length + 2)
+                let data                    = NSData.parsePackedMap(self, index: i + 1 + 2, count: count, length: &length)
+                try checkIfEnd(data, shift: length + 1 + 2)
                 dataTypes.append(.map16)
             case 0xdf:
                 let count                   = _32bitMarkupDataSize
                 var length: Int             = 0
-                let data                    = NSData.parsePackedArray(self, index: i + 1 + 4, count: count, length: &length)
-                try checkIfEnd(data, shift: length + 4)
+                let data                    = NSData.parsePackedMap(self, index: i + 1 + 4, count: count, length: &length)
+                try checkIfEnd(data, shift: length + 1 + 4)
                 dataTypes.append(.map32)
             default: throw UnpackingError.UnknownDataType_undifined_prefix
             }
