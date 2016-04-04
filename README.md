@@ -1,6 +1,6 @@
-# YSMessagePack- for swift 2.1
+# YSMessagePack- for swift 3
 
-YSMessagePack is a messagePack packer/unpacker written in swift 2.1. It is designed to be light and easy to use. YSMessagePack include following features:
+YSMessagePack is a messagePack packer/unpacker written in swift (swift 3 ready). It is designed to be light and easy to use. YSMessagePack include following features:
 
 - (new) Pack custom structs and classes
 - Pack and unpack multiple message-packed data regardless of types with only one line of code
@@ -14,8 +14,7 @@ YSMessagePack is a messagePack packer/unpacker written in swift 2.1. It is desig
 
 ## Installation
 
-Simply add files under the directory below to your project                                                                                                                                                                                                                                                                  
-```url
+Simply add files under the directory below to your project                                                                                                                                                                                                              ```url
 MessagePack/src
 ```
 
