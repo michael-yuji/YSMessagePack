@@ -45,7 +45,7 @@ let foo = MyStruct(name: "foo", index: 626)
 //use the method `packItems` to pack 
 //For primitive types (and boolean) or your custom type, use `Mask(foo)` in the array
 //this will be the packed data
-let msgPackedBytes: NSData = packItems([Mask(foo), Mask(foo), exampleInt, exampleStr, exampleArray]) 
+let msgPackedBytes: NSData = packItems([Mask(bool), Mask(foo), exampleInt, exampleStr, exampleArray]) 
 ```
 
 **Or you can pack them individually and add them to a byte array manually (Which is also less expensive)**
