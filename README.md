@@ -14,9 +14,15 @@ YSMessagePack is a messagePack packer/unpacker written in swift (swift 3 ready).
 
 ## Installation
 
-Simply add files under the directory below to your project                                                                                                                                                                                                              ```url
+Simply add files under the directory below to your project
+
+                                                                                   `
+
+
+```url
 MessagePack/src
 ```
+
 
 # Usage 
 ### Pack:
