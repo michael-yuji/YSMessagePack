@@ -1,14 +1,14 @@
 //
-//  helper_methods.swift
-//  messagePack
+//  misc.swift
+//  MessagePack2.0
 //
-//  Created by 悠二 on 11/3/15.
-//  Copyright © 2015 Yuji. All rights reserved.
+//  Created by yuuji on 4/3/16.
+//  Copyright © 2016 yuuji. All rights reserved.
 //
 
 import Foundation
 
-typealias ByteArray      = [UInt8]
+public typealias ByteArray      = [UInt8]
 
 extension Array
 {
@@ -18,8 +18,10 @@ extension Array
         var temp = self
         var buffer = [Element]()
         buffer.reserveCapacity(temp.count)
-        for (var i = temp.count; i > 0 ; i--) {
-            buffer.append(temp[i - 1])
+        var i = temp.count
+        while i > 0 {
+            buffer.append(temp[i-1])
+            i -= 1
         }
         self = buffer
     }
@@ -32,7 +34,7 @@ extension Array
         temp.insert(ex, atIndex: exception)
         self = temp
     }
-
+    
 }
 
 extension Int {
@@ -40,7 +42,7 @@ extension Int {
     var _16_bit_array: ByteArray {
         get {
             return ByteArray(arrayLiteral: UInt8( self >> 8),
-                UInt8((self ^ (self >> 8) * 0x100))
+                             UInt8((self ^ (self >> 8) * 0x100))
             )
         }
     }
@@ -48,9 +50,9 @@ extension Int {
     var _32_bit_array: ByteArray {
         get {
             return ByteArray(arrayLiteral:  UInt8((self >> 24)                       ),
-                                            UInt8((self >> 16) ^ (self >> 24) * 0x100),
-                                            UInt8((self >> 8 ) ^ (self >> 16) * 0x100),
-                                            UInt8 (self        ^ (self >>  8) * 0x100)
+                             UInt8((self >> 16) ^ (self >> 24) * 0x100),
+                             UInt8((self >> 8 ) ^ (self >> 16) * 0x100),
+                             UInt8 (self        ^ (self >>  8) * 0x100)
             )
         }
     }
@@ -64,35 +66,41 @@ extension UInt8
     
     #if arch(arm64)
     func _64bitValue(joinWith value1: UInt8,
-        _ value2: UInt8,
-        _ value3: UInt8,
-        _ value4: UInt8,
-        _ value5: UInt8,
-        _ value6: UInt8,
-        _ value7: UInt8) -> Int
+    _ value2: UInt8,
+    _ value3: UInt8,
+    _ value4: UInt8,
+    _ value5: UInt8,
+    _ value6: UInt8,
+    _ value7: UInt8) -> Int
     { return    Int(self)   * 0x10000_0000_0000_00 +
-        Int(value1) * 0x10000_0000_0000 +
-        Int(value2) * 0x10000_0000_00 +
-        Int(value3) * 0x10000_0000 +
-        Int(value4) * 0x10000_00 +
-        Int(value5) * 0x10000 +
-        Int(value6) * 0x100 +
-        Int(value7)
+    Int(value1) * 0x10000_0000_0000 +
+    Int(value2) * 0x10000_0000_00 +
+    Int(value3) * 0x10000_0000 +
+    Int(value4) * 0x10000_00 +
+    Int(value5) * 0x10000 +
+    Int(value6) * 0x100 +
+    Int(value7)
     }
     #endif
 }
 
-struct unpackOptions: OptionSetType {
-    var rawValue: UInt8
-    static let keepRemainingBytes = unpackOptions(rawValue: 1 << 1)
+public struct unpackOptions: OptionSetType {
+    public var rawValue: UInt8
+    public static let keepRemainingBytes = unpackOptions(rawValue: 1 << 1)
+    public init(rawValue: UInt8) {
+        self.rawValue = rawValue
+    }
 }
 
-struct packOptions: OptionSetType {
-    var rawValue: UInt8
-    static let PackWithASCIIStringEncoding  = packOptions(rawValue: 1 << 1)
-    static let PackWithUTF8StringEncoding   = packOptions(rawValue: 1 << 2)
-    static let PackIntegersAsUInt           = packOptions(rawValue: 1 << 3)
-    static let PackAllPossitiveIntAsUInt    = packOptions(rawValue: 1 << 4)
+public struct packOptions: OptionSetType {
+    public var rawValue: UInt8
+    public static let PackWithASCIIStringEncoding  = packOptions(rawValue: 1 << 1)
+    public static let PackWithUTF8StringEncoding   = packOptions(rawValue: 1 << 2)
+    public static let PackIntegersAsUInt           = packOptions(rawValue: 1 << 3)
+    public static let PackAllPossitiveIntAsUInt    = packOptions(rawValue: 1 << 4)
+    public init(rawValue: UInt8) {
+        self.rawValue = rawValue
+    }
 }
 
 enum control_flow {
@@ -101,13 +109,13 @@ enum control_flow {
     case None
 }
 
-enum PackingError: ErrorType
+public enum PackingError: ErrorType
 {
     case dataEncodingError
     case packingError
 }
 
-enum UnpackingError: ErrorType
+public enum UnpackingError: ErrorType
 {
     case cannotUnpackMap_bad_map_data
     case UnknownDataType_undifined_prefix
@@ -139,23 +147,31 @@ public enum DataTypes: Int {
         case .Nil:          shift = 0
         case .Bool:         shift = 0
         case .fixInt,
-        .fixNegativeInt:    shift = 0
-        case .fixstr:       shift = 1
+             .fixNegativeInt:    shift = 0
+        case .fixstr,
+             .fixarray,
+             .fixmap:       shift = 1
         case .Str_8bit,
-        .bin8:         shift = 2
+             .bin8:         shift = 2
         case .Str_16bit,
-        .bin16:        shift = 3
+             .bin16,
+             .array16,
+             .map16:        shift = 3
         case .Str_32bit,
-        .bin32:        shift = 5
+             .bin32,
+             .array32,
+             .map32:        shift = 5
         case .UInt8,
-        .UInt16,
-        .UInt32,
-        .UInt64,
-        .Int8,
-        .Int16,
-        .Int32,
-        .Int64:        shift = 1
+             .UInt16,
+             .UInt32,
+             .UInt64,
+             .Int8,
+             .Int16,
+             .Int32,
+             .Int64:        shift = 1
         default:
+            print(self)
+            print(self == .fixInt)
             throw UnpackingError.UnknownDataType_cannot_find_type_to_match_prefix
         }
         return shift

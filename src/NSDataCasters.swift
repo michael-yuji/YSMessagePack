@@ -1,16 +1,14 @@
 //
-//  NSDataHelper.swift
-//  messagePack
+//  NSDataCasters.swift
+//  MessagePack2.0
 //
-//  Created by 悠二 on 11/3/15.
-//  Copyright © 2015 Yuji. All rights reserved.
+//  Created by yuuji on 4/3/16.
+//  Copyright © 2016 yuuji. All rights reserved.
 //
 
 import Foundation
 
-import Foundation
-
-extension NSData {
+public extension NSData {
     
     ///Return the byte array of self
     func byteArrayValue() -> ByteArray {
@@ -66,8 +64,9 @@ extension NSData {
     }
     
     ///Cast data into NSArray according to its byte_array value
-    var castToArray: NSArray? {
-        return NSKeyedUnarchiver.unarchiveObjectWithData(self) as? NSArray
+    var castToArray: [NSData]? {
+        let array = NSKeyedUnarchiver.unarchiveObjectWithData(self) as? NSArray
+        return (array == nil) ? nil : array! as? [NSData]
     }
     
     var castToBool: Bool? {
@@ -75,7 +74,11 @@ extension NSData {
     }
     
     func castToStringArray(withEncoding encoding: NSStringEncoding = NSASCIIStringEncoding) -> [String?] {
-        return self.castToArray!.map({($0 as! NSData).castToString(withEncoding: encoding)})
+        return self.castToArray!.map({($0).castToString(withEncoding: encoding)})
+    }
+    
+    func mapUnpackedArray<T>(handler: (NSData) throws -> T) -> [T]{
+        return try! self.castToArray!.map(handler)
     }
     
     ///Cast data into NSDictionary according to its byte_array value

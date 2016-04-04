@@ -1,32 +1,118 @@
 //
 //  pack.swift
-//  messagePack
+//  MessagePack2.0
 //
-//  Created by 悠二 on 11/3/15.
-//  Copyright © 2015 Yuji. All rights reserved.
+//  Created by yuuji on 4/3/16.
+//  Copyright © 2016 yuuji. All rights reserved.
 //
 
 import Foundation
 
+public protocol Packable {
+    func packFormat() -> [AnyObject]
+}
+
+public class Mask: AnyObject
+{
+    var uint: uint64!
+    var int: Int64!
+    var bool: Bool!
+    var customObj: Packable!
+    
+    init(_ obj: Packable) {
+        customObj = obj
+    }
+    
+    init<T: UnsignedIntegerType>(_ uint: T) {
+        switch uint {
+        case is uint8:
+            self.uint = uint64(uint as! uint8)
+        case is uint16:
+            self.uint = uint64(uint as! uint16)
+        case is uint32:
+            self.uint = uint64(uint as! uint32)
+        case is uint64:
+            self.uint = uint64(uint as! uint64)
+        default: break
+        }
+    }
+    
+    init<T: SignedIntegerType>(_ int: T) {
+        switch int {
+        case is Int8:
+            self.int = Int64(int as! Int8)
+        case is Int16:
+            self.int = Int64(int as! Int16)
+        case is Int32:
+            self.int = Int64(int as! Int32)
+        case is Int64:
+            self.int = Int64(int as! Int64)
+        default: break
+        }
+    }
+    
+    init(bool: Bool) {
+        self.bool = bool
+    }
+}
+
 /**Pack items in the array by each's type and map into a single byte-array
- - Warning: DO NOT INCLUDE BOOL TYPE OR THE BOOL WILL PACK AS AN INT VALUE
+ - Warning: USE MASK(YOUR_ITEM) if $YOUR_ITEM is Bool, Uint64/32/16/8, Int64/32/16/8 or your custom structs / classes
  - parameter thingsToPack: an array of objects you want to pack
  - parameter withOptions packing options
  */
 
-func packItems(things_to_pack: [AnyObject], withOptions options: packOptions = [.PackWithASCIIStringEncoding]) -> NSData {
+public func packItems(things_to_pack: [AnyObject], withOptions options: packOptions = [.PackWithASCIIStringEncoding]) -> NSData
+{
     var byteArray = ByteArray()
     
     for item in things_to_pack
     {
         pack_any_type(&byteArray, item: item, options: options)
     }
+
     return byteArray.dataValue()
 }
 
-private func pack_any_type<T>(inout byteArray: [UInt8], item: T?, options: packOptions = [.PackWithASCIIStringEncoding]) {
+public func packCustomObjects(things_to_pack: [Packable], withOptions options: packOptions = [.PackWithASCIIStringEncoding]) -> NSData
+{
+    var byteArray = ByteArray()
+    
+    for item in things_to_pack
+    {
+        for component in item.packFormat() {
+            pack_any_type(&byteArray, item: component, options: options)
+        }
+    }
+    return byteArray.dataValue()
+}
+
+private func pack_any_type<T>(inout byteArray: [UInt8], item: T?, options: packOptions = [.PackWithASCIIStringEncoding])
+{
     switch item
     {
+    case is Mask:
+        let m = item as! Mask
+        if m.customObj != nil {
+            for component in m.customObj.packFormat() {
+                pack_any_type(&byteArray, item: component, options: options)
+            }
+        }
+        
+        if m.int != nil {
+            pack_any_type(&byteArray, item: m.int)
+        }
+        
+        if m.uint != nil {
+            pack_any_type(&byteArray, item: m.uint)
+        }
+        
+        if m.bool != nil {
+            let bool: Bool = m.bool
+            byteArray += bool ? [0xc3] : [0xc2]
+//            print("xx")
+        }
+        
     case is String:
         let str = item as! String
         var encoding: NSStringEncoding = NSASCIIStringEncoding
@@ -90,7 +176,7 @@ private func size_after_pack_calculator<T>(item_to_switch: T) -> Int {
         
     case is Int:
         let int = item_to_switch as! Int
-    
+        
         i += int.pack().byteArrayValue().count
         
     case is NSData:
@@ -102,7 +188,7 @@ private func size_after_pack_calculator<T>(item_to_switch: T) -> Int {
 
 //MARK: Bool
 
-extension Bool {
+public extension Bool {
     func pack() -> NSData {
         switch self {
         case true:  return [0xc3].dataValue()
@@ -112,7 +198,7 @@ extension Bool {
 }
 
 //MARK: String
-extension StringLiteralType {
+public extension StringLiteralType {
     func pack(withEncoding encoding: NSStringEncoding) throws -> NSData?
     {
         let data    = self.dataUsingEncoding(encoding)
@@ -152,7 +238,7 @@ extension StringLiteralType {
 
 
 //MARK: Integers
-extension UnsignedIntegerType
+public extension UnsignedIntegerType
 {
     func pack() -> NSData
     {
@@ -177,7 +263,7 @@ extension UnsignedIntegerType
 }
 
 
-extension SignedIntegerType {
+public extension SignedIntegerType {
     func pack() -> NSData
     {
         
@@ -215,7 +301,7 @@ extension SignedIntegerType {
 }
 
 //MARK: Floating Point
-extension FloatingPointType {
+public extension FloatingPointType {
     func pack() -> NSData
     {
         var value = self
@@ -235,7 +321,7 @@ extension FloatingPointType {
 
 //MARK: Binary
 
-extension NSData {
+public extension NSData {
     func pack() -> NSData
     {
         var prefix: UInt8!
@@ -262,7 +348,7 @@ extension NSData {
 }
 
 //MARK: Dictionary/Map
-extension NSDictionary
+public extension NSDictionary
 {
     func pack() -> NSData
     {
@@ -308,7 +394,7 @@ extension NSDictionary
     }
 }
 
-extension Dictionary
+public extension Dictionary
 {
     func pack() -> NSData
     {
@@ -359,12 +445,12 @@ extension Dictionary
 
 
 //MARK: Array
-extension NSArray
+public extension NSArray
 {
     func pack() -> NSData
     {
         var byteArray = ByteArray()
-
+        
         #if arch(arm) || arch(i386)
             switch self.count {
             case 0...15:
@@ -394,7 +480,6 @@ extension NSArray
         return byteArray.dataValue()
     }
     
-    
     private var byteArray_length: size_t {
         var i = 0
         for item in self {
@@ -404,7 +489,7 @@ extension NSArray
     }
 }
 
-extension Array
+public extension Array
 {
     func pack() -> NSData
     {
