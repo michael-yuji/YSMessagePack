@@ -92,15 +92,4 @@ public extension NSData {
         return int_value
     }
     
-    /**Joint two data into one by adding another data to the tail of the first's ([data][with])
-     - Parameter data: data will be placed at first after joint
-     - Parameter with: data will be put at the end after joint
-     */
-    static func joint(data: NSData, with otherData: NSData) -> NSData {
-        var temp_data0 = [UInt8](count: data.length, repeatedValue: 0)
-        var temp_data1 = [UInt8](count: otherData.length, repeatedValue: 0)
-        data.getBytes(&temp_data0, length: data.length)
-        otherData.getBytes(&temp_data1, length: otherData.length)
-        return (temp_data0 + temp_data1).dataValue()
-    }
 }
