@@ -8,6 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		CE3096581CB239E70011C6C1 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3096571CB239E70011C6C1 /* main.swift */; };
+		CE30965F1CB241E90011C6C1 /* packunpackByGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE30965E1CB241E90011C6C1 /* packunpackByGroup.swift */; };
+		CE3096671CB242020011C6C1 /* misc.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3096611CB242020011C6C1 /* misc.swift */; };
+		CE3096681CB242020011C6C1 /* NSDataCasters.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3096621CB242020011C6C1 /* NSDataCasters.swift */; };
+		CE3096691CB242020011C6C1 /* operators.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3096631CB242020011C6C1 /* operators.swift */; };
+		CE30966A1CB242020011C6C1 /* pack.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3096641CB242020011C6C1 /* pack.swift */; };
+		CE30966B1CB242020011C6C1 /* parse.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3096651CB242020011C6C1 /* parse.swift */; };
+		CE30966C1CB242020011C6C1 /* unpack.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3096661CB242020011C6C1 /* unpack.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +32,13 @@
 /* Begin PBXFileReference section */
 		CE3096541CB239E70011C6C1 /* messagePackTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = messagePackTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE3096571CB239E70011C6C1 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		CE30965E1CB241E90011C6C1 /* packunpackByGroup.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = packunpackByGroup.swift; sourceTree = "<group>"; };
+		CE3096611CB242020011C6C1 /* misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = misc.swift; path = msgPack/misc.swift; sourceTree = "<group>"; };
+		CE3096621CB242020011C6C1 /* NSDataCasters.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NSDataCasters.swift; path = msgPack/NSDataCasters.swift; sourceTree = "<group>"; };
+		CE3096631CB242020011C6C1 /* operators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = operators.swift; path = msgPack/operators.swift; sourceTree = "<group>"; };
+		CE3096641CB242020011C6C1 /* pack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = pack.swift; path = msgPack/pack.swift; sourceTree = "<group>"; };
+		CE3096651CB242020011C6C1 /* parse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = parse.swift; path = msgPack/parse.swift; sourceTree = "<group>"; };
+		CE3096661CB242020011C6C1 /* unpack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = unpack.swift; path = msgPack/unpack.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,9 +71,24 @@
 		CE3096561CB239E70011C6C1 /* messagePackTest */ = {
 			isa = PBXGroup;
 			children = (
+				CE3096601CB241F80011C6C1 /* msgpack */,
+				CE30965E1CB241E90011C6C1 /* packunpackByGroup.swift */,
 				CE3096571CB239E70011C6C1 /* main.swift */,
 			);
 			path = messagePackTest;
+			sourceTree = "<group>";
+		};
+		CE3096601CB241F80011C6C1 /* msgpack */ = {
+			isa = PBXGroup;
+			children = (
+				CE3096611CB242020011C6C1 /* misc.swift */,
+				CE3096621CB242020011C6C1 /* NSDataCasters.swift */,
+				CE3096631CB242020011C6C1 /* operators.swift */,
+				CE3096641CB242020011C6C1 /* pack.swift */,
+				CE3096651CB242020011C6C1 /* parse.swift */,
+				CE3096661CB242020011C6C1 /* unpack.swift */,
+			);
+			name = msgpack;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -119,7 +148,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE3096671CB242020011C6C1 /* misc.swift in Sources */,
+				CE30966C1CB242020011C6C1 /* unpack.swift in Sources */,
 				CE3096581CB239E70011C6C1 /* main.swift in Sources */,
+				CE30966A1CB242020011C6C1 /* pack.swift in Sources */,
+				CE30966B1CB242020011C6C1 /* parse.swift in Sources */,
+				CE3096681CB242020011C6C1 /* NSDataCasters.swift in Sources */,
+				CE30965F1CB241E90011C6C1 /* packunpackByGroup.swift in Sources */,
+				CE3096691CB242020011C6C1 /* operators.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,6 +277,7 @@
 				CE30965D1CB239E70011C6C1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
