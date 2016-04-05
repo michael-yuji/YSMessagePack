@@ -501,7 +501,6 @@ public extension Array
                 byteArray.append(UInt8(0b10010000 | self.count))
             case 16...0xffff:
                 byteArray.append(0xdc)
-                p
                 byteArray += self.count._16_bit_array
             default: break
             }
