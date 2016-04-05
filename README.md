@@ -1,13 +1,14 @@
 # YSMessagePack- for swift 3
 
-YSMessagePack is a messagePack packer/unpacker written in swift (swift 3 ready). It is designed to be light and easy to use. YSMessagePack include following features:
+YSMessagePack is a messagePack packer/unpacker written in swift (swift 3 ready). It is designed to be fast and easy to use. YSMessagePack include following features:
 
-- (new) Pack custom structs and classes
+- (new) Pack custom structs and classes / unpack objects by groups and apply handler to each group (easier to re-construct your struct)
 - Pack and unpack multiple message-packed data regardless of types with only one line of code
 - Specify how many items to unpack
-- Packing options
-- Get remaining bytes that were not message-packed
+- Get remaining bytes that were not message-packed ; start packing from some index -- so you can mix messagepack with other protocol!!! 
 - Helper methods to cast NSData to desired types
+- Operator +^ and +^= to join NSData 
+- Packing options
 
 ## Version
  1.1
@@ -28,6 +29,13 @@ MessagePack/src
 
 
 ```swift
+
+let exampleInt: Int = 1
+let exampleStr: String = "Hello World"
+let exampleArray: [Int] = [1, 2, 3, 4, 5, 6]
+let bool: Bool = true
+
+//To make your struct / class packable
 struct MyStruct: Packable {  //Confirm to this protocol
     var name: String
     var index: Int
@@ -35,11 +43,6 @@ struct MyStruct: Packable {  //Confirm to this protocol
         return [name, index] //pack order
     }
 }
-
-let exampleInt: Int = 1
-let exampleStr: String = "Hello World"
-let exampleArray: [Int] = [1, 2, 3, 4, 5, 6]
-let bool: Bool = true
 let foo = MyStruct(name: "foo", index: 626)
 
 //use the method `packItems` to pack 

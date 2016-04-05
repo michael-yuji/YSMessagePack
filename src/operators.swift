@@ -8,16 +8,27 @@
 
 import Foundation
 
-//infix operator ^+ {}
 infix operator +^ {}
+infix operator +^= {}
 
-public func +^ (lhs: NSMutableData, rhs: NSMutableData) {
+public func +^ (lhs: NSMutableData, rhs: NSMutableData)-> NSMutableData {
+    let x = (lhs.copy() as! NSMutableData)
+    x.appendBytes(rhs.bytes, length: rhs.length)
+    return x
+}
+
+public func +^= (lhs: NSMutableData, rhs: NSMutableData) {
     lhs.appendBytes(rhs.bytes, length: rhs.length)
 }
 
-public func +^ (inout lhs: NSData, rhs: NSData) {
+public func +^ (inout lhs: NSData, rhs: NSData) -> NSData {
+    let temp = (lhs.mutableCopy() as! NSMutableData)
+    temp.appendBytes(rhs.bytes, length: rhs.length)
+    return temp
+}
+
+public func +^= (inout lhs: NSData, rhs: NSData) {
     let temp = (lhs.mutableCopy() as! NSMutableData)
     temp.appendBytes(rhs.bytes, length: rhs.length)
     lhs = temp
 }
-
