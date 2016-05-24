@@ -9,9 +9,10 @@ YSMessagePack is a messagePack packer/unpacker written in swift (swift 3 ready).
 - Helper methods to cast NSData to desired types
 - Operator +^ and +^= to join NSData 
 - Packing options
+- For previous users: `Mask` class is no longer needed to wrap nil, uint, and custom types
 
 ## Version
- 1.1
+ 1.5
 
 ## Installation
 
@@ -29,26 +30,24 @@ MessagePack/src
 
 
 ```swift
-
-let exampleInt: Int = 1
-let exampleStr: String = "Hello World"
-let exampleArray: [Int] = [1, 2, 3, 4, 5, 6]
-let bool: Bool = true
-
-//To make your struct / class packable
-struct MyStruct: Packable {  //Confirm to this protocol
-    var name: String
-    var index: Int
-    func packFormat() -> [AnyObject] { //protocol function
-        return [name, index] //pack order
-    }
-}
-let foo = MyStruct(name: "foo", index: 626)
-
 //use the method `packItems` to pack 
-//For primitive types (and boolean) or your custom type, use `Mask(foo)` in the array
-//this will be the packed data
-let msgPackedBytes: NSData = packItems([Mask(bool), Mask(foo), exampleInt, exampleStr, exampleArray]) 
+//this will be the packed NSData
+let packed = packItems(["abcde", 123123, 12323.24234, true, false])
+
+let unpacks = try! packed.unpack()
+
+print(unpacks[0].castToString())
+print(unpacks[1].castToInt)
+print(unpacks[2].castToDouble)
+print(unpacks[3].castToBool)
+print(unpacks[4].castToBool)
+/* result
+Optional("abcde")
+123123
+12323.24234
+Optional(true)
+Optional(false)
+*/
 ```
 
 **Or you can pack them individually and add them to a byte array manually (Which is also less expensive)**
@@ -84,25 +83,6 @@ do {
 } catch let error as NSError{
     NSLog("Error occurs during unpacking: %@", error)
 }
-
-//Remember how to pack your struct? Here is a better way to unpack a stream of bytes formatted in specific format
- let testObj1 = MyStruct(name: "TestObject1", index: 1)
- let testObj2 = MyStruct(name: "TestObject2", index: 2)
- let testObj3 = MyStruct(name: "TestObject3", index: 3)
- 
- let packed = packCustomObjects(testObj1, testObj2, testObj3) //This is an other method that can pack your own struct easier
- 
- let nobjsInOneGroup = 2
- 
- try! packed.unpackByGroupsWith(nobjsInOneGroup) {
-     (unpackedData, isLast) -> Bool
-     
-     //you can also involve additional args like number of groups to unpack
-     guard let name = unpackedData[0].castToString() else {return false} //abort unpacking hen something wrong
-     let index = unpackedData[1]
-     let testObj = MyStruct(name: name, index: index) // assembly      
-     return true //proceed unpacking, or return false to abort
- } 
 
 ```
 
