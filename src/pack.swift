@@ -37,7 +37,6 @@ public func packItems(things_to_pack: [Packable?], withOptions options: packOpti
     
     for item in things_to_pack
     {
-        print(item is Double)
         packtype(&byteArray, item: item, options: options)
     }
 

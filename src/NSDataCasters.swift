@@ -31,6 +31,13 @@ public extension NSData {
     var castToInt: Int {
         var int_value: Int = 0
         self.getBytes(&int_value, length: sizeof(Int))
+        
+        return int_value
+    }
+    
+    var castToUInt: Int {
+        var int_value: Int = 0
+        self.getBytes(&int_value, length: sizeof(Int))
         return int_value
     }
     
