@@ -149,6 +149,8 @@ public enum DataTypes: Int {
         case .fixInt,
              .fixNegativeInt:    shift = 0
         case .fixstr,
+             .float32,
+             .float64,
              .fixarray,
              .fixmap:       shift = 1
         case .Str_8bit,
@@ -170,8 +172,6 @@ public enum DataTypes: Int {
              .Int32,
              .Int64:        shift = 1
         default:
-            print(self)
-            print(self == .fixInt)
             throw UnpackingError.UnknownDataType_cannot_find_type_to_match_prefix
         }
         return shift

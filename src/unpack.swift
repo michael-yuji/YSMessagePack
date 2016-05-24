@@ -331,7 +331,7 @@ extension NSData {
             switch type {
             //Since message pack is using big edian, we have to flip the bytes to make it useful
             case .UInt8, .UInt16, .UInt32, .UInt64,
-                 .Int8,  .Int16,  .Int32,  .Int64:
+                 .Int8,  .Int16,  .Int32,  .Int64, .float64, .float32:
                 temp.flip()
                 
             case .fixNegativeInt:
