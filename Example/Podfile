@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'YSMessagePack_Example' do
+  pod 'YSMessagePack', :path => '../'
+
+  target 'YSMessagePack_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end

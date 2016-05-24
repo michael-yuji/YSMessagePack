@@ -1,0 +1,16 @@
+PODS:
+  - YSMessagePack (0.1.0)
+
+DEPENDENCIES:
+  - YSMessagePack (from `../`)
+
+EXTERNAL SOURCES:
+  YSMessagePack:
+    :path: ../
+
+SPEC CHECKSUMS:
+  YSMessagePack: cee2210e72c9c6a44b4467b894a13dc2e436a8d6
+
+PODFILE CHECKSUM: b3bad987bf225d777848ae95cc4e115527f80bb2
+
+COCOAPODS: 1.0.0
