@@ -43,18 +43,18 @@ public func packItems(things_to_pack: [Packable?], withOptions options: packOpti
     return byteArray.dataValue()
 }
 
-public func packCustomObjects(things_to_pack: [Packable], withOptions options: packOptions = [.PackWithASCIIStringEncoding]) -> NSData
-{
-    var byteArray = ByteArray()
-    
-    for item in things_to_pack
-    {
-        for component in item.packFormat() {
-            packtype(&byteArray, item: component)
-        }
-    }
-    return byteArray.dataValue()
-}
+//public func packCustomObjects(things_to_pack: [Packable], withOptions options: packOptions = [.PackWithASCIIStringEncoding]) -> NSData
+//{
+//    var byteArray = ByteArray()
+//    
+//    for item in things_to_pack
+//    {
+//        for component in item.packFormat() {
+//            packtype(&byteArray, item: component)
+//       }
+//    }
+//    return byteArray.dataValue()
+//}
 
 private func packtype(inout byteArray: [UInt8], item: Packable?, options: packOptions = [.PackWithASCIIStringEncoding])
 {
@@ -67,7 +67,9 @@ private func packtype(inout byteArray: [UInt8], item: Packable?, options: packOp
     {
     
     case .Custom:
-        byteArray += packCustomObjects(item!.packFormat()).byteArrayValue()
+        for i in item!.packFormat() {
+            packtype(&byteArray, item: i)
+        }
         
     case .String:
         let str = item as! String
