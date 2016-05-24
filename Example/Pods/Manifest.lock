@@ -1,0 +1,12 @@
+PODS:
+  - YSMessagePack (1.5.0)
+
+DEPENDENCIES:
+  - YSMessagePack
+
+SPEC CHECKSUMS:
+  YSMessagePack: 2f4cbfaf6db234b66ee2f819737eb528b631040d
+
+PODFILE CHECKSUM: c7367f8cbb69fc115b6d7e10a2eead09580ecf9f
+
+COCOAPODS: 1.0.0
