@@ -8,8 +8,8 @@
 
 Pod::Spec.new do |s|
   s.name             = 'YSMessagePack'
-  s.version          = '0.1.0'
-  s.summary          = 'A short description of YSMessagePack.'
+  s.version          = '1.5.0'
+  s.summary          = 'A swift message pack packer/unpacker'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -21,22 +21,14 @@ Pod::Spec.new do |s|
 TODO: Add long description of the pod here.
                        DESC
 
-  s.homepage         = 'https://github.com/<GITHUB_USERNAME>/YSMessagePack'
+  s.homepage         = 'https://github.com/michael-yuji/YSMessagePack'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'yuji' => 'admin@hatsuneyuji.com' }
-  s.source           = { :git => 'https://github.com/<GITHUB_USERNAME>/YSMessagePack.git', :tag => s.version.to_s }
+  s.source           = { :git => 'https://github.com/michael-yuji/YSMessagePack.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
   s.ios.deployment_target = '8.0'
 
   s.source_files = 'YSMessagePack/Classes/**/*'
-  
-  # s.resource_bundles = {
-  #   'YSMessagePack' => ['YSMessagePack/Assets/*.png']
-  # }
-
-  # s.public_header_files = 'Pod/Classes/**/*.h'
-  # s.frameworks = 'UIKit', 'MapKit'
-  # s.dependency 'AFNetworking', '~> 2.3'
-end
+end  
