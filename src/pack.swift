@@ -8,51 +8,20 @@
 
 import Foundation
 
+public enum MsgPackTypes {
+    case Bool, Uint, Int, Float, String, Array, Dictionary, Data, Custom, Nil
+}
 public protocol Packable {
-    func packFormat() -> [AnyObject]
+    func packFormat() -> [Packable]
+    func msgtype() -> MsgPackTypes
 }
 
-public class Mask: AnyObject
-{
-    var uint: uint64!
-    var int: Int64!
-    var bool: Bool!
-    var customObj: Packable!
-    
-    init(_ obj: Packable) {
-        customObj = obj
+public class Nil : Packable {
+    public func packFormat() -> [Packable] {
+        return []
     }
-    
-    init<T: UnsignedIntegerType>(_ uint: T) {
-        switch uint {
-        case is uint8:
-            self.uint = uint64(uint as! uint8)
-        case is uint16:
-            self.uint = uint64(uint as! uint16)
-        case is uint32:
-            self.uint = uint64(uint as! uint32)
-        case is uint64:
-            self.uint = uint64(uint as! uint64)
-        default: break
-        }
-    }
-    
-    init<T: SignedIntegerType>(_ int: T) {
-        switch int {
-        case is Int8:
-            self.int = Int64(int as! Int8)
-        case is Int16:
-            self.int = Int64(int as! Int16)
-        case is Int32:
-            self.int = Int64(int as! Int32)
-        case is Int64:
-            self.int = Int64(int as! Int64)
-        default: break
-        }
-    }
-    
-    init(bool: Bool) {
-        self.bool = bool
+    public func msgtype() -> MsgPackTypes {
+        return .Nil
     }
 }
 
@@ -62,13 +31,14 @@ public class Mask: AnyObject
  - parameter withOptions packing options
  */
 
-public func packItems(things_to_pack: [AnyObject], withOptions options: packOptions = [.PackWithASCIIStringEncoding]) -> NSData
+public func packItems(things_to_pack: [Packable?], withOptions options: packOptions = [.PackWithASCIIStringEncoding]) -> NSData
 {
     var byteArray = ByteArray()
     
     for item in things_to_pack
     {
-        pack_any_type(&byteArray, item: item, options: options)
+        print(item is Double)
+        packtype(&byteArray, item: item, options: options)
     }
 
     return byteArray.dataValue()
@@ -81,39 +51,26 @@ public func packCustomObjects(things_to_pack: [Packable], withOptions options: p
     for item in things_to_pack
     {
         for component in item.packFormat() {
-            pack_any_type(&byteArray, item: component, options: options)
+            packtype(&byteArray, item: component)
         }
     }
     return byteArray.dataValue()
 }
 
-private func pack_any_type<T>(inout byteArray: [UInt8], item: T?, options: packOptions = [.PackWithASCIIStringEncoding])
+private func packtype(inout byteArray: [UInt8], item: Packable?, options: packOptions = [.PackWithASCIIStringEncoding])
 {
-    switch item
+    if item == nil {
+        byteArray += [0xc0]
+        return
+    }
+    
+    switch item!.msgtype()
     {
-    case is Mask:
-        let m = item as! Mask
-        if m.customObj != nil {
-            for component in m.customObj.packFormat() {
-                pack_any_type(&byteArray, item: component, options: options)
-            }
-        }
+    
+    case .Custom:
+        byteArray += packCustomObjects(item!.packFormat()).byteArrayValue()
         
-        if m.int != nil {
-            pack_any_type(&byteArray, item: m.int)
-        }
-        
-        if m.uint != nil {
-            pack_any_type(&byteArray, item: m.uint)
-        }
-        
-        if m.bool != nil {
-            let bool: Bool = m.bool
-            byteArray += bool ? [0xc3] : [0xc2]
-//            print("xx")
-        }
-        
-    case is String:
+    case .String:
         let str = item as! String
         var encoding: NSStringEncoding = NSASCIIStringEncoding
         
@@ -125,7 +82,7 @@ private func pack_any_type<T>(inout byteArray: [UInt8], item: T?, options: packO
         
         try! byteArray += str.pack(withEncoding: encoding)!.byteArrayValue()
         
-    case is Int, is Int8, is Int16, is Int32, is Int64:
+    case .Int:
         var int = item as! Int
         if options.rawValue & packOptions.PackAllPossitiveIntAsUInt.rawValue != 0 || options.rawValue & packOptions.PackIntegersAsUInt.rawValue != 0 {
             if int >= 0 {
@@ -138,32 +95,27 @@ private func pack_any_type<T>(inout byteArray: [UInt8], item: T?, options: packO
         }
         byteArray += int.pack().byteArrayValue()
         
-    case is UInt, is UInt8, is UInt16, is UInt32, is UInt64:
+    case .Uint:
         let uint = item as! UInt64
         byteArray += uint.pack().byteArrayValue()
         
-    case is Float32, is Float64:
+    case .Float:
         byteArray += (item as! Double).pack().byteArrayValue()
+    
+    case .Bool:
+        byteArray += (item as! Bool).pack().byteArrayValue()
         
-    case is NSData:
+    case .Data:
         byteArray += (item as! NSData).pack().byteArrayValue()
         
-    case is [AnyObject]:
+    case .Array:
         byteArray += (item as! [AnyObject]).pack().byteArrayValue()
         
-    case is NSDictionary:
+    case .Dictionary:
         byteArray += (item as! NSDictionary).pack().byteArrayValue()
         
-    case is Float32:
-        byteArray += (item as! Float32).pack().byteArrayValue()
-        
-    case is Float64:
-        byteArray += (item as! Float64).pack().byteArrayValue()
-        
-    case nil:
+    case .Nil:
         byteArray += [0xc0]
-        
-    default: break
     }
 }
 
@@ -176,7 +128,6 @@ private func size_after_pack_calculator<T>(item_to_switch: T) -> Int {
         
     case is Int:
         let int = item_to_switch as! Int
-        
         i += int.pack().byteArrayValue().count
         
     case is NSData:
@@ -188,17 +139,25 @@ private func size_after_pack_calculator<T>(item_to_switch: T) -> Int {
 
 //MARK: Bool
 
-public extension Bool {
-    func pack() -> NSData {
+extension Bool : Packable {
+    public func pack() -> NSData {
         switch self {
         case true:  return [0xc3].dataValue()
         case false: return [0xc2].dataValue()
         }
     }
+    
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Bool
+    }
 }
 
 //MARK: String
-public extension StringLiteralType {
+extension StringLiteralType : Packable {
     func pack(withEncoding encoding: NSStringEncoding) throws -> NSData?
     {
         let data    = self.dataUsingEncoding(encoding)
@@ -234,13 +193,21 @@ public extension StringLiteralType {
         for (index, lengthByte) in lengthByte.enumerate() {mirror?.insert(lengthByte, atIndex: 1 + index)}
         return NSData(bytes: mirror!, length: mirror!.count)
     }
+    
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .String
+    }
 }
 
 
 //MARK: Integers
 public extension UnsignedIntegerType
 {
-    func pack() -> NSData
+    public func pack() -> NSData
     {
         var value  = self
         var param: (prefix: UInt8, size: size_t)!
@@ -260,11 +227,16 @@ public extension UnsignedIntegerType
         data_mirror.insert(param.prefix, atIndex: 0)
         return data_mirror.dataValue()
     }
+    
+    
+    public func packFormat() -> [Packable] {
+        return []
+    }
 }
 
 
 public extension SignedIntegerType {
-    func pack() -> NSData
+    public func pack() -> NSData
     {
         
         var value  = self
@@ -301,8 +273,8 @@ public extension SignedIntegerType {
 }
 
 //MARK: Floating Point
-public extension FloatingPointType {
-    func pack() -> NSData
+extension FloatingPointType {
+    public func pack() -> NSData
     {
         var value = self
         var param: (prefix: UInt8, size: size_t)!
@@ -319,10 +291,133 @@ public extension FloatingPointType {
     }
 }
 
+extension Double : Packable {
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Float
+    }
+}
+
+extension Float : Packable {
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Float
+    }
+}
+
+extension Int : Packable {
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    public func msgtype() -> MsgPackTypes {
+        return .Int
+    }
+}
+
+extension Int8 : Packable {
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Int
+    }
+}
+
+
+extension Int16 : Packable {
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Int
+    }
+}
+
+extension Int32 : Packable {
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Int
+    }
+}
+
+
+extension Int64 : Packable {
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Int
+    }
+}
+
+extension UInt : Packable {
+    
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Uint
+    }
+}
+
+extension UInt8 : Packable {
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Uint
+    }
+}
+
+
+extension UInt16 : Packable {
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Uint
+    }
+}
+
+extension UInt32 : Packable {
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    public func msgtype() -> MsgPackTypes {
+        return .Uint
+    }
+}
+
+
+extension UInt64 : Packable {
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    public func msgtype() -> MsgPackTypes {
+        return .Uint
+    }
+}
+
+
 //MARK: Binary
 
 public extension NSData {
-    func pack() -> NSData
+    public func pack() -> NSData
     {
         var prefix: UInt8!
         var temp = self.length.pack().byteArrayValue()
@@ -345,12 +440,16 @@ public extension NSData {
         temp += self.byte_array
         return temp.dataValue()
     }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Data
+    }
 }
 
 //MARK: Dictionary/Map
-public extension NSDictionary
+extension NSDictionary : Packable
 {
-    func pack() -> NSData
+    public func pack() -> NSData
     {
         var byteArray = ByteArray()
         
@@ -378,8 +477,8 @@ public extension NSDictionary
         #endif
         
         for (key, value) in self {
-            pack_any_type(&byteArray, item: key)
-            pack_any_type(&byteArray, item: value)
+            packtype(&byteArray, item: key as? Packable)
+            packtype(&byteArray, item: value as? Packable)
         }
         return byteArray.dataValue()
     }
@@ -392,11 +491,19 @@ public extension NSDictionary
         }
         return i
     }
+    
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Dictionary
+    }
 }
 
-public extension Dictionary
+extension Dictionary : Packable
 {
-    func pack() -> NSData
+    public func pack() -> NSData
     {
         var byteArray = ByteArray()
         
@@ -424,30 +531,27 @@ public extension Dictionary
         #endif
         
         for (key, value) in self {
-            switch key {
-            case is String:
-                let str = value as! String
-                try! byteArray += str.pack(withEncoding: NSASCIIStringEncoding)!.byteArrayValue()
-                
-            case is Int:
-                let int = value as! Int
-                byteArray += int.pack().byteArrayValue()
-                
-            case is NSData:
-                byteArray += (value as! NSData).byteArrayValue()
-                
-            default: break
-            }
+            packtype(&byteArray, item: key as? Packable)
+            packtype(&byteArray, item: value as? Packable)
         }
+
         return byteArray.dataValue()
+    }
+    
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Dictionary
     }
 }
 
 
 //MARK: Array
-public extension NSArray
+extension NSArray : Packable
 {
-    func pack() -> NSData
+    public func pack() -> NSData
     {
         var byteArray = ByteArray()
         
@@ -475,7 +579,8 @@ public extension NSArray
         #endif
         
         for value in self {
-            pack_any_type(&byteArray, item: value)
+//            pack_any_type(&byteArray, item: value)
+            packtype(&byteArray, item: value as? Packable)
         }
         return byteArray.dataValue()
     }
@@ -486,12 +591,20 @@ public extension NSArray
             i += size_after_pack_calculator(item)
         }
         return i
+    }
+    
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Array
     }
 }
 
-public extension Array
+extension Array : Packable
 {
-    func pack() -> NSData
+    public func pack() -> NSData
     {
         var byteArray = ByteArray()
         
@@ -519,7 +632,7 @@ public extension Array
         #endif
         
         for value in self {
-            pack_any_type(&byteArray, item: value)
+            packtype(&byteArray, item: value as? Packable)
         }
         return byteArray.dataValue()
     }
@@ -530,5 +643,13 @@ public extension Array
             i += size_after_pack_calculator(item)
         }
         return i
+    }
+    
+    public func packFormat() -> [Packable] {
+        return []
+    }
+    
+    public func msgtype() -> MsgPackTypes {
+        return .Array
     }
 }
