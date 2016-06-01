@@ -2,13 +2,14 @@
 
 YSMessagePack is a messagePack packer/unpacker written in swift (swift 3 ready). It is designed to be easy to use. YSMessagePack include following features:
 
-- Pack custom structs and classes / unpack objects by groups and apply handler to each group (easier to re-construct your struct)
+- Pack custom structs and classes / unpack objects by groups and apply handler to each group (easier to re-construct your struct$)
+- Asynchronous unpacking
 - Pack and unpack multiple message-packed data regardless of types with only one line of code
 - Specify how many items to unpack
 - Get remaining bytes that were not message-packed ; start packing from some index -- so you can mix messagepack with other protocol!!! 
 - Helper methods to cast NSData to desired types
 - Operator +^ and +^= to join NSData 
-- Packing options
+
 
 ## Version
  1.5
@@ -42,12 +43,17 @@ struct MyStruct: Packable {  //Confirm to this protocol
         return .Custom
     }
 }
+
 let foo = MyStruct(name: "foo", index: 626)
 
-//use the method `packItems` to pack 
-//For primitive types (and boolean) or your custom type, use `Mask(foo)` in the array
+// To pack items, just put all of them in a single array
+// and call the `pactItems` function
+
 //this will be the packed data
-let msgPackedBytes: NSData = packItems(true, foo, exampleInt, exampleStr, exampleArray]) 
+let msgPackedBytes: NSData = packItems([true, foo, exampleInt, exampleStr, exampleArray]) 
+
+// Now your payload is ready to send!!!
+
 ```
 
 **Or you can pack them individually and add them to a byte array manually (Which is also less expensive)**
@@ -68,7 +74,10 @@ let packedArray = exampleArray.pack()
 let msgPackedBytes: NSData = packedInt +^ packedStr +^ packedArray
 ```
 ## Unpack
-Unpack a messagePacked byte array is also very easy:
+
+YSMessagePack offer a number of different ways and options to unpack include unpack asynchronously, see the example project for detail.
+
+To unpack a messagepacked bytearray is pretty easy:
 
 ```swift
 do {
@@ -117,5 +126,3 @@ do {
     NSLog("Error occurs during unpacking: %@", error)
 }
 ```
-
-
