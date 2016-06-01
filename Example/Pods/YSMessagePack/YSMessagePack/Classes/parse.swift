@@ -25,7 +25,7 @@ private func parsePackedMap(bytes: ByteArray, atIndex index: Int, count: Int) ->
     return length
 }
 
-func parseData(messagePackedBytes byte_array: ByteArray, specific_amount amount: Int? = nil, inout dataLengthOutput len: Int) throws -> [(Range<Int>, DataTypes)]
+public func parseData(messagePackedBytes byte_array: ByteArray, specific_amount amount: Int? = nil, inout dataLengthOutput len: Int) throws -> [(Range<Int>, DataTypes)]
 {
     var itemMarks             = [(Range<Int>, DataTypes)]()
     var i: Int                =     0
@@ -161,6 +161,6 @@ func parseData(messagePackedBytes byte_array: ByteArray, specific_amount amount:
         }
     }
     
-    len = i
+//    len = i
     return itemMarks
 }

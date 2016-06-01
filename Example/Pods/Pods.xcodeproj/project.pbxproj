@@ -339,6 +339,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3CD4DA6193AA402F3BFCCAA7D5F61711 /* Pods-YSMessagePack_Example.release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -401,6 +402,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7D7CCBA1DA7AB8B905682E856CADF066 /* Pods-YSMessagePack_Example.debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;

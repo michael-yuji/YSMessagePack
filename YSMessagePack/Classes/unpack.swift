@@ -8,6 +8,10 @@
 
 import Foundation
 
+#if os(OSX)
+    import OpenCL
+#endif
+
 public extension NSData {
     
     /**
@@ -361,3 +365,61 @@ public extension NSData {
         return (packedObjects, dataTypes)
     }
 }
+
+public extension NSData {
+    
+    public func unpackAsyncForEach(priority: dispatch_queue_priority_t, amount: Int? = nil, competitionHandler: (data: NSData, type: DataTypes, atIndex: Int) -> Void) {
+        dispatch_async(dispatch_get_global_queue(priority, 0)) {
+            var i = 0;
+            let parsed = try? parseData(messagePackedBytes: self.byte_array,specific_amount: amount, dataLengthOutput: &i)
+            
+            if let parsed = parsed {
+                
+                let group = dispatch_group_create()
+                
+                for (index, s) in parsed.enumerate() {
+                    dispatch_group_async(group, dispatch_get_global_queue(priority, 0), {
+                        let range = NSMakeRange(s.0.startIndex, s.0.endIndex - s.0.startIndex)
+                        var buf = ByteArray(count: range.length, repeatedValue: 0)
+                        self.getBytes(&buf, range: range)
+                        let data = try! NSData(bytes: buf, length: range.length).unpack(specific_amount: 1, returnRemainingBytes: false)[0]
+                        competitionHandler(data: data, type: s.1, atIndex: index)
+                    })
+                }
+            }
+        }
+    }
+    
+    
+    public func unpackAsync(priority: dispatch_queue_priority_t, amount: Int? = nil, competitionHandler: ([NSData]) -> Void ) {
+        dispatch_async(dispatch_get_global_queue(priority, 0)) {
+            var i = 0;
+            let parsed = try? parseData(messagePackedBytes: self.byte_array,specific_amount: amount, dataLengthOutput: &i)
+            
+            if let parsed = parsed {
+                
+                var output = [NSData](count: 100, repeatedValue: NSData())
+                let group = dispatch_group_create()
+                
+                for (index, s) in parsed.enumerate() {
+                    dispatch_group_async(group, dispatch_get_global_queue(priority, 0), {
+                        let range = NSMakeRange(s.0.startIndex, s.0.endIndex - s.0.startIndex)
+                        var buf = ByteArray(count: range.length, repeatedValue: 0)
+                        self.getBytes(&buf, range: range)
+                        let data = try! NSData(bytes: buf, length: range.length).unpack(specific_amount: 1, returnRemainingBytes: false)[0]
+                        output[index] = data
+                    })
+                }
+                
+                dispatch_group_notify(group, dispatch_get_global_queue(priority, 0), {
+                    competitionHandler(output)
+                })
+                
+            }
+        }
+    }
+}
+
+
+
+
