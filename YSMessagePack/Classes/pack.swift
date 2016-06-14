@@ -58,6 +58,72 @@ public func packItems(things_to_pack: [Packable?], withOptions options: packOpti
 //    return byteArray.dataValue()
 //}
 
+#if swift(>=3)
+    private func packtype(_ byteArray: inout [UInt8], item: Packable?, options: packOptions = [.PackWithASCIIStringEncoding])
+    {
+        if item == nil {
+            byteArray += [0xc0]
+            return
+        }
+        
+        switch item!.msgtype()
+        {
+            
+        case .Custom:
+            for i in item!.packFormat() {
+                packtype(&byteArray, item: i)
+            }
+            
+        case .String:
+            let str = item as! String
+//            var encoding: NSStringEncoding = NSASCIIStringEncoding
+            var encoding: String.Encoding = .ascii
+            if options.rawValue & packOptions.PackWithASCIIStringEncoding.rawValue == 0 {
+                if options.rawValue & packOptions.PackWithUTF8StringEncoding.rawValue != 0 {
+//                    encoding = NSUTF8StringEncoding
+                    encoding = .utf8
+                }
+            }
+            
+            try! byteArray += str.pack(withEncoding: encoding)!.byteArrayValue()
+            
+        case .Int:
+            var int = item as! Int
+            if options.rawValue & packOptions.PackAllPossitiveIntAsUInt.rawValue != 0 || options.rawValue & packOptions.PackIntegersAsUInt.rawValue != 0 {
+                if int >= 0 {
+                    fallthrough
+                } else {
+                    if options.rawValue & packOptions.PackIntegersAsUInt.rawValue != 0 {
+                        int = 0
+                    }
+                }
+            }
+            byteArray += int.pack().byteArrayValue()
+            
+        case .Uint:
+            let uint = item as! UInt64
+            byteArray += uint.pack().byteArrayValue()
+            
+        case .Float:
+            byteArray += (item as! Double).pack().byteArrayValue()
+            
+        case .Bool:
+            byteArray += (item as! Bool).pack().byteArrayValue()
+            
+        case .Data:
+            byteArray += (item as! NSData).pack().byteArrayValue()
+            
+        case .Array:
+            byteArray += (item as! [AnyObject]).pack().byteArrayValue()
+            
+        case .Dictionary:
+            byteArray += (item as! NSDictionary).pack().byteArrayValue()
+            
+        case .Nil:
+            byteArray += [0xc0]
+        }
+    }
+#else
 private func packtype(inout byteArray: [UInt8], item: Packable?, options: packOptions = [.PackWithASCIIStringEncoding])
 {
     if item == nil {
@@ -121,14 +187,18 @@ private func packtype(inout byteArray: [UInt8], item: Packable?, options: packOp
         byteArray += [0xc0]
     }
 }
+#endif
 
-private func size_after_pack_calculator<T>(item_to_switch: T) -> Int {
+private func size_after_pack_calculator<T>(_ item_to_switch: T) -> Int {
     var i = 0
     switch item_to_switch {
     case is String:
         let str = item_to_switch as! String
-        try! i += str.pack(withEncoding: NSASCIIStringEncoding)!.byteArrayValue().count
-        
+        #if swift(>=3)
+            try! i += str.pack(withEncoding: .ascii)!.byte_array.count
+        #else
+            try! i += str.pack(withEncoding: NSASCIIStringEncoding)!.byteArrayValue().count
+        #endif
     case is Int:
         let int = item_to_switch as! Int
         i += int.pack().byteArrayValue().count
@@ -161,6 +231,50 @@ extension Bool : Packable {
 
 //MARK: String
 extension StringLiteralType : Packable {
+    
+    #if swift(>=3)
+    
+    func pack(withEncoding encoding: String.Encoding) throws -> NSData?
+    {
+        let data = self.data(using: encoding)
+        
+        if let data = data {
+            var mirror  = [UInt8](repeatElement(0, count: data.count))
+            data.copyBytes(to: &mirror, count: data.count)
+            
+            var prefix: UInt8!
+            var lengthByte: [UInt8] = []
+            
+            #if arch(arm) || arch(i386)
+                switch data.length {
+                case (0b00000...0b11111) :   prefix = UInt8(0b101_00000 + data.length)
+                case (0b100000...0xFF)   :   prefix = 0xd9; lengthByte.append(UInt8(data.length))
+                case (0x100...0xFFFF)    :   prefix = 0xda; lengthByte  += [UInt8(data.length / 0x100),
+                                                                            UInt8(data.length % 0x100)]
+                default: throw PackingError.dataEncodingError
+                }
+            #else
+                switch data.count {
+                case (0b00000...0b11111) :   prefix = UInt8(0b101_00000 + data.count)
+                case (0b100000...0xFF)   :   prefix = 0xd9; lengthByte.append(UInt8(data.count))
+                case (0x100...0xFFFF)    :   prefix = 0xda; lengthByte +=  [UInt8(data.count / 0x100),
+                                                                            UInt8(data.count % 0x100)]
+                case (0x10000...0xFFFFFFFF):
+                    prefix = 0xdb
+                    let buf = [UInt8(data.count / 0x10000), UInt8(data.count % 0x10000 / 0x100), UInt8(data.count % 0x10000 % 0x100)]
+                    lengthByte +=  buf
+                default: throw PackingError.dataEncodingError
+                }
+            #endif
+            mirror.insert(prefix, at: 0)
+            return NSData(bytes: mirror, length: mirror.count)
+        } else {
+            throw PackingError.dataEncodingError
+        }
+    }
+    
+    #else
+    
     func pack(withEncoding encoding: NSStringEncoding) throws -> NSData?
     {
         let data    = self.dataUsingEncoding(encoding)
@@ -196,7 +310,7 @@ extension StringLiteralType : Packable {
         for (index, lengthByte) in lengthByte.enumerate() {mirror?.insert(lengthByte, atIndex: 1 + index)}
         return NSData(bytes: mirror!, length: mirror!.count)
     }
-    
+    #endif
     public func packFormat() -> [Packable] {
         return []
     }
@@ -227,7 +341,11 @@ public extension UnsignedIntegerType
         
         var data_mirror = data.byteArrayValue()
         data_mirror.flip()
-        data_mirror.insert(param.prefix, atIndex: 0)
+        #if swift(>=3)
+            data_mirror.insert(param.prefix, at: 0)
+        #else
+            data_mirror.insert(param.prefix, atIndex: 0)
+        #endif
         return data_mirror.dataValue()
     }
     
@@ -241,7 +359,7 @@ public extension UnsignedIntegerType
 public extension SignedIntegerType {
     public func pack() -> NSData
     {
-        
+    
         var value  = self
         var param: (prefix: UInt8, size: size_t)!
         
@@ -269,7 +387,11 @@ public extension SignedIntegerType {
         data_mirror.flip()
         
         if !(0 <= value && value <= 0b01111111) {
-            data_mirror.insert(param.prefix, atIndex: 0)
+            #if swift(>=3)
+                data_mirror.insert(param.prefix, at: 0)
+            #else
+                data_mirror.insert(param.prefix, atIndex: 0)
+            #endif
         }
         return data_mirror.dataValue()
     }
@@ -289,7 +411,11 @@ extension FloatingPointType {
         let data = NSMutableData(bytes: &value, length: param.size)
         var data_mirror = data.byteArrayValue()
         data_mirror.flip()
-        data_mirror.insert(param.prefix, atIndex: 0)
+        #if swift(>=3)
+            data_mirror.insert(param.prefix, at: 0)
+        #else
+            data_mirror.insert(param.prefix, atIndex: 0)
+        #endif
         return data_mirror.dataValue()
     }
 }

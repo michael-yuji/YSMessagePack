@@ -8,12 +8,21 @@
 
 import Foundation
 
+#if swift(>=3)
+    public extension Array {
+        public init(count: Int, repeatedValue: Element) {
+            self.init(repeating: repeatedValue, count: count)
+        }
+    }
+#endif
+
 public extension NSData {
     
     ///Return the byte array of self
     func byteArrayValue() -> ByteArray {
         //buffer
         var byte_array: ByteArray = ByteArray(count: self.length, repeatedValue: 0)
+        
         //getBytes and put it into the buffer
         self.getBytes(&byte_array, length: self.length)
         return byte_array
@@ -62,6 +71,31 @@ public extension NSData {
         return double_value
     }
     
+    #if swift(>=3)
+    /**
+     Cast Data into String/NSString according to its byte_array value
+     - Parameter withEncoding: encoding to use, default is `ascii`
+     */
+    func castToString(withEncoding encoding: String.Encoding = .ascii) -> String? {
+        return String(data: Data(bytes: self.byte_array), encoding: encoding)
+    }
+    
+    ///Cast data into NSArray according to its byte_array value
+    var castToArray: [NSData]? {
+        let array = NSKeyedUnarchiver.unarchiveObject(with: Data(bytes: self.byte_array)) as? NSArray
+        return (array == nil) ? nil : array! as? [NSData]
+    }
+    
+    
+    func castToStringArray(withEncoding encoding: String.Encoding = .ascii) -> [String?] {
+        return self.castToArray!.map({($0).castToString(withEncoding: encoding)})
+    }
+    
+    ///Cast data into NSDictionary according to its byte_array value
+    var castToDictionary: NSDictionary? {
+        return NSKeyedUnarchiver.unarchiveObject(with: Data(bytes: self.byte_array)) as? NSDictionary
+    }
+    #else
     /**
      Cast Data into String/NSString according to its byte_array value
      - Parameter withEncoding: encoding to use, default is `NSASCIIStringEncoding`
@@ -70,27 +104,28 @@ public extension NSData {
         return NSString(data: self, encoding: encoding) as String?
     }
     
+    func castToStringArray(withEncoding encoding: NSStringEncoding = NSASCIIStringEncoding) -> [String?] {
+        return self.castToArray!.map({($0).castToString(withEncoding: encoding)})
+    }
+    
     ///Cast data into NSArray according to its byte_array value
     var castToArray: [NSData]? {
         let array = NSKeyedUnarchiver.unarchiveObjectWithData(self) as? NSArray
         return (array == nil) ? nil : array! as? [NSData]
     }
     
+    ///Cast data into NSDictionary according to its byte_array value
+    var castToDictionary: NSDictionary? {
+        return NSKeyedUnarchiver.unarchiveObjectWithData(self) as? NSDictionary
+    }
+    #endif
+
     var castToBool: Bool? {
         return Bool.init(self.castToInt)
     }
     
-    func castToStringArray(withEncoding encoding: NSStringEncoding = NSASCIIStringEncoding) -> [String?] {
-        return self.castToArray!.map({($0).castToString(withEncoding: encoding)})
-    }
-    
     func mapUnpackedArray<T>(handler: (NSData) throws -> T) -> [T]{
         return try! self.castToArray!.map(handler)
-    }
-    
-    ///Cast data into NSDictionary according to its byte_array value
-    var castToDictionary: NSDictionary? {
-        return NSKeyedUnarchiver.unarchiveObjectWithData(self) as? NSDictionary
     }
     
     public var castToUInt64: UInt64 {

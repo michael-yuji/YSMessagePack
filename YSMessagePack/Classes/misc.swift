@@ -10,11 +10,21 @@ import Foundation
 
 public typealias ByteArray      = [UInt8]
 
+#if swift(>=3)
+public typealias ErrorType = ErrorProtocol
+public typealias OptionSetType = OptionSet
+public typealias SignedIntegerType = SignedInteger
+public typealias UnsignedIntegerType = UnsignedInteger
+public typealias FloatingPointType = FloatingPoint
+public typealias dispatch_queue_priority_t = DispatchQoS
+#endif
+
 extension Array
 {
     func dataValue() -> NSData {return NSData(bytes: self, length: self.count)}
     
     mutating func flip() {
+        
         var temp = self
         var buffer = [Element]()
         buffer.reserveCapacity(temp.count)
@@ -29,9 +39,17 @@ extension Array
     mutating func flip(exception: Int) {
         var temp = self
         let ex   = self[exception]
-        temp.removeAtIndex(exception)
-        temp.flip()
-        temp.insert(ex, atIndex: exception)
+        
+        #if swift(>=3)
+            temp.remove(at: exception)
+            temp.flip()
+            temp.insert(ex, at: exception)
+        #else
+            temp.removeAtIndex(exception)
+            temp.flip()
+            temp.insert(ex, atIndex: exception)
+        #endif
+        
         self = temp
     }
     
