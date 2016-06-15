@@ -12,12 +12,12 @@ YSMessagePack is a messagePack packer/unpacker written in swift (swift 3 ready).
 
 
 ## Version
- 1.5
+ 1.6
 
 ## Installation
 
 - Simply add files under `YSMessagePack/Classes` to your project, 
-- use cocoapod, add "pod `'YSMessagePack', '~> 1.5.0'` to your podfile  
+- use cocoapod, add "pod `'YSMessagePack', '~> 1.6.0'` to your podfile  
 
 # Usage 
 ### Pack:
@@ -67,7 +67,7 @@ let foo = MyStruct(name: "foo", index: 626)
 
 let msgPackedBytes = pack(items: [bool, foo, exampleInt, exampleStr, exampleArray])
 
-``
+```
 
 
 **Or you can pack them individually and add them to a byte array manually (Which is also less expensive)**
