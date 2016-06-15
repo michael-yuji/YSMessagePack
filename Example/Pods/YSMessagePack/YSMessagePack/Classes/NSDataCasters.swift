@@ -29,7 +29,7 @@ public extension NSData {
     }
     
     ///Get the byte array of self
-    var byte_array: [UInt8] {
+    var byteArray: [UInt8] {
         var byte_array: [UInt8] = [UInt8](count: self.length, repeatedValue: 0)
         //getBytes and put it into the buffer
         self.getBytes(&byte_array, length: self.length)
@@ -77,12 +77,12 @@ public extension NSData {
      - Parameter withEncoding: encoding to use, default is `ascii`
      */
     func castToString(withEncoding encoding: String.Encoding = .ascii) -> String? {
-        return String(data: Data(bytes: self.byte_array), encoding: encoding)
+        return String(data: Data(bytes: self.byteArray), encoding: encoding)
     }
     
     ///Cast data into NSArray according to its byte_array value
     var castToArray: [NSData]? {
-        let array = NSKeyedUnarchiver.unarchiveObject(with: Data(bytes: self.byte_array)) as? NSArray
+        let array = NSKeyedUnarchiver.unarchiveObject(with: Data(bytes: self.byteArray)) as? NSArray
         return (array == nil) ? nil : array! as? [NSData]
     }
     
@@ -93,7 +93,7 @@ public extension NSData {
     
     ///Cast data into NSDictionary according to its byte_array value
     var castToDictionary: NSDictionary? {
-        return NSKeyedUnarchiver.unarchiveObject(with: Data(bytes: self.byte_array)) as? NSDictionary
+        return NSKeyedUnarchiver.unarchiveObject(with: Data(bytes: self.byteArray)) as? NSDictionary
     }
     #else
     /**
