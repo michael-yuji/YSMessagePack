@@ -31,6 +31,20 @@ let exampleStr: String = "Hello World"
 let exampleArray: [Int] = [1, 2, 3, 4, 5, 6]
 let bool: Bool = true
 
+// To pack items, just put all of them in a single array
+// and call the `pack(items:)` function
+
+//this will be the packed data
+let msgPackedBytes: NSData = pack(items: [true, foo, exampleInt, exampleStr, exampleArray]) 
+
+// Now your payload is ready to send!!!
+
+```
+
+But what if we have some custom data structure to send?
+
+```Swift
+
 //To make your struct / class packable
 struct MyStruct: Packable {  //Confirm to this protocol
     var name: String
@@ -44,17 +58,17 @@ struct MyStruct: Packable {  //Confirm to this protocol
     }
 }
 
+let exampleInt: Int = 1
+let exampleStr: String = "Hello World"
+let exampleArray: [Int] = [1, 2, 3, 4, 5]
+let bool: Bool = true
+
 let foo = MyStruct(name: "foo", index: 626)
 
-// To pack items, just put all of them in a single array
-// and call the `pactItems` function
+let msgPackedBytes = pack(items: [bool, foo, exampleInt, exampleStr, exampleArray])
 
-//this will be the packed data
-let msgPackedBytes: NSData = packItems([true, foo, exampleInt, exampleStr, exampleArray]) 
+``
 
-// Now your payload is ready to send!!!
-
-```
 
 **Or you can pack them individually and add them to a byte array manually (Which is also less expensive)**
 
@@ -64,12 +78,15 @@ let exampleStr: String = "Hello World"
 let exampleArray: [Int] = [1, 2, 3, 4, 5, 6]
 
 //Now pack them individually
-let packedInt = exampleInt.pack()
+let packedInt = exampleInt.packed()
 
 //if you didn't specific encoding, the default encoding will be ASCII
-let packedStr = exampleStr.pack(withEncoding: NSASCIIStringEncoding) 
-
-let packedArray = exampleArray.pack()
+#if swift(>=3)
+let packedStr = exampleStr.packed(withEncoding: NSASCIIStringEncoding) 
+#else
+let packedStr = exampleStr.packed(withEncoding: .ascii)
+#endif
+let packedArray = exampleArray.packed()
 //You can use this operator +^ the join the data on rhs to the end of data on lhs
 let msgPackedBytes: NSData = packedInt +^ packedStr +^ packedArray
 ```
@@ -82,7 +99,7 @@ To unpack a messagepacked bytearray is pretty easy:
 ```swift
 do {
     //The unpack method will return an array of NSData which each element is an unpacked object
-    let unpackedItems = try msgPackedBytes.unpack()
+    let unpackedItems = try msgPackedBytes.itemsUnpacked()
     //instead of casting the NSData to the type you want, you can call these `.castTo..` methods to do the job for you
     let int: Int = unpackedItems[2].castToInt()
 
@@ -120,7 +137,7 @@ do {
 ```swift
 do {
     //Unpack only 2 objects, and we are not interested in remaining bytes
-    let unpackedItems = try msgPackedBytes.unpack(specific_amount: 2, returnRemainingBytes: false)
+    let unpackedItems = try msgPackedBytes.itemsUnpacked(specific_amount: 2, returnRemainingBytes: false)
     print(unpackedItems.count) //will print 2
 } catch let error as NSError{
     NSLog("Error occurs during unpacking: %@", error)
