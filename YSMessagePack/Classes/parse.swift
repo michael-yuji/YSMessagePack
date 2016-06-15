@@ -12,7 +12,7 @@ private func parsePackedArray(_ bytes: ByteArray, atIndex index: Int, count: Int
     var bytes = bytes
     bytes.removeFirst(index)
     var length: size_t = 0
-    try! parseData(messagePackedBytes: bytes, specific_amount: count, dataLengthOutput: &length)
+    try! _ = parseData(messagePackedBytes: bytes, specific_amount: count, dataLengthOutput: &length)
     return length
 }
 
@@ -21,7 +21,7 @@ private func parsePackedMap(_ bytes: ByteArray, atIndex index: Int, count: Int) 
     var bytes = bytes
     bytes.removeFirst(index)
     var length: size_t = 0
-    try! parseData(messagePackedBytes: bytes, specific_amount: count * 2, dataLengthOutput: &length)
+    try! _ = parseData(messagePackedBytes: bytes, specific_amount: count * 2, dataLengthOutput: &length)
     return length
 }
 
@@ -61,19 +61,19 @@ private func parsePackedMap(_ bytes: ByteArray, atIndex index: Int, count: Int) 
                 
             //Nil
             case 0xc0:
-                type = .Nil
+                type = .`nil`
                 dataSize = _singleByteSize
             case 0xc2:
-                type = .Bool
+                type = .bool
                 dataSize = _singleByteSize
                 
             case 0xc3:
-                type = .Bool
+                type = .bool
                 dataSize = _singleByteSize
                 
             //bool
             case 0xc2, 0xc3:
-                type = .Bool            ;    dataSize = _singleByteSize
+                type = .bool            ;    dataSize = _singleByteSize
                 
             //bin
             case 0xc4:  type = .bin8    ;    dataSize = _8bitMarkupDataSize
@@ -85,10 +85,10 @@ private func parsePackedMap(_ bytes: ByteArray, atIndex index: Int, count: Int) 
             case 0xcb:  type = .float64 ;    dataSize = _64bitDataSize
                 
             //uint
-            case 0xcc:  type = .UInt8   ;    dataSize = _8bitDataSize
-            case 0xcd:  type = .UInt16  ;    dataSize = _16bitDataSize
-            case 0xce:  type = .UInt32  ;    dataSize = _32bitDataSize
-            case 0xcf:  type = .UInt64  ;    dataSize = _64bitDataSize
+            case 0xcc:  type = .uInt8   ;    dataSize = _8bitDataSize
+            case 0xcd:  type = .uInt16  ;    dataSize = _16bitDataSize
+            case 0xce:  type = .uInt32  ;    dataSize = _32bitDataSize
+            case 0xcf:  type = .uInt64  ;    dataSize = _64bitDataSize
                 
                 //int
                 
@@ -96,18 +96,18 @@ private func parsePackedMap(_ bytes: ByteArray, atIndex index: Int, count: Int) 
                 type = .fixInt          ;    dataSize = _singleByteSize
             case 0b11100000..<0b11111111:
                 type = .fixNegativeInt  ;    dataSize = _singleByteSize
-            case 0xd0:  type = .Int8    ;    dataSize = _8bitDataSize
-            case 0xd1:  type = .Int16   ;    dataSize = _16bitDataSize
-            case 0xd2:  type = .Int32   ;    dataSize = _32bitDataSize
-            case 0xd3:  type = .Int64   ;    dataSize = _64bitDataSize
+            case 0xd0:  type = .int8    ;    dataSize = _8bitDataSize
+            case 0xd1:  type = .int16   ;    dataSize = _16bitDataSize
+            case 0xd2:  type = .int32   ;    dataSize = _32bitDataSize
+            case 0xd3:  type = .int64   ;    dataSize = _64bitDataSize
                 
                 
             //String
             case 0b101_00000...0b101_11111:
                 type = .fixstr  ;    dataSize = _fixStrDataMarkupSize
-            case 0xd9:  type = .Str_8bit;    dataSize = _8bitMarkupDataSize
-            case 0xda:  type = .Str_16bit;   dataSize = _16bitMarkupDataSize
-            case 0xdb:  type = .Str_32bit;   dataSize = _32bitMarkupDataSize
+            case 0xd9:  type = .str8bit;    dataSize = _8bitMarkupDataSize
+            case 0xda:  type = .str16bit;   dataSize = _16bitMarkupDataSize
+            case 0xdb:  type = .str32bit;   dataSize = _32bitMarkupDataSize
                 
             //array
             case 0b10010000...0b10011111:
@@ -142,7 +142,7 @@ private func parsePackedMap(_ bytes: ByteArray, atIndex index: Int, count: Int) 
                 dataSize = parsePackedMap(byte_array, atIndex: i + 1 + 4, count: count)
                 type = .map32
                 
-            default: throw UnpackingError.UnknownDataType_undifined_prefix
+            default: throw UnpackingError.unknownDataTypeUndifinedPrefix
             }
             
             shift = try type.getDataPrefixSize()
@@ -156,7 +156,7 @@ private func parsePackedMap(_ bytes: ByteArray, atIndex index: Int, count: Int) 
             //when `packedObject` stored enough values or entered an infinity loop because of bad data, break
             if (amount != nil && itemMarks.count == amount) || (dataSize + shift) == 0 {
                 if (dataSize + shift == 0) {
-                    throw UnpackingError.InvaildDataFormat
+                    throw UnpackingError.invaildDataFormat
                 }
                 break
             }
@@ -201,19 +201,19 @@ private func parsePackedMap(_ bytes: ByteArray, atIndex index: Int, count: Int) 
                 
             //Nil
             case 0xc0:
-                type = .Nil
+                type = .`nil`
                 dataSize = _singleByteSize
             case 0xc2:
-                type = .Bool
+                type = .bool
                 dataSize = _singleByteSize
                 
             case 0xc3:
-                type = .Bool
+                type = .bool
                 dataSize = _singleByteSize
                 
             //bool
             case 0xc2, 0xc3:
-                type = .Bool            ;    dataSize = _singleByteSize
+                type = .bool            ;    dataSize = _singleByteSize
                 
             //bin
             case 0xc4:  type = .bin8    ;    dataSize = _8bitMarkupDataSize
@@ -225,10 +225,10 @@ private func parsePackedMap(_ bytes: ByteArray, atIndex index: Int, count: Int) 
             case 0xcb:  type = .float64 ;    dataSize = _64bitDataSize
                 
             //uint
-            case 0xcc:  type = .UInt8   ;    dataSize = _8bitDataSize
-            case 0xcd:  type = .UInt16  ;    dataSize = _16bitDataSize
-            case 0xce:  type = .UInt32  ;    dataSize = _32bitDataSize
-            case 0xcf:  type = .UInt64  ;    dataSize = _64bitDataSize
+            case 0xcc:  type = .uInt8   ;    dataSize = _8bitDataSize
+            case 0xcd:  type = .uInt16  ;    dataSize = _16bitDataSize
+            case 0xce:  type = .uInt32  ;    dataSize = _32bitDataSize
+            case 0xcf:  type = .uInt64  ;    dataSize = _64bitDataSize
                 
                 //int
                 
@@ -236,18 +236,18 @@ private func parsePackedMap(_ bytes: ByteArray, atIndex index: Int, count: Int) 
                 type = .fixInt          ;    dataSize = _singleByteSize
             case 0b11100000..<0b11111111:
                 type = .fixNegativeInt  ;    dataSize = _singleByteSize
-            case 0xd0:  type = .Int8    ;    dataSize = _8bitDataSize
-            case 0xd1:  type = .Int16   ;    dataSize = _16bitDataSize
-            case 0xd2:  type = .Int32   ;    dataSize = _32bitDataSize
-            case 0xd3:  type = .Int64   ;    dataSize = _64bitDataSize
+            case 0xd0:  type = .int8    ;    dataSize = _8bitDataSize
+            case 0xd1:  type = .int16   ;    dataSize = _16bitDataSize
+            case 0xd2:  type = .int32   ;    dataSize = _32bitDataSize
+            case 0xd3:  type = .int64   ;    dataSize = _64bitDataSize
                 
                 
             //String
             case 0b101_00000...0b101_11111:
                 type = .fixstr  ;    dataSize = _fixStrDataMarkupSize
-            case 0xd9:  type = .Str_8bit;    dataSize = _8bitMarkupDataSize
-            case 0xda:  type = .Str_16bit;   dataSize = _16bitMarkupDataSize
-            case 0xdb:  type = .Str_32bit;   dataSize = _32bitMarkupDataSize
+            case 0xd9:  type = .str8bit;    dataSize = _8bitMarkupDataSize
+            case 0xda:  type = .str16bit;   dataSize = _16bitMarkupDataSize
+            case 0xdb:  type = .str32bit;   dataSize = _32bitMarkupDataSize
                 
             //array
             case 0b10010000...0b10011111:
@@ -282,7 +282,7 @@ private func parsePackedMap(_ bytes: ByteArray, atIndex index: Int, count: Int) 
                 dataSize = parsePackedMap(byte_array, atIndex: i + 1 + 4, count: count)
                 type = .map32
                 
-            default: throw UnpackingError.UnknownDataType_undifined_prefix
+            default: throw UnpackingError.unknownDataTypeUndifinedPrefix
             }
             
             shift = try type.getDataPrefixSize()
@@ -296,7 +296,7 @@ private func parsePackedMap(_ bytes: ByteArray, atIndex index: Int, count: Int) 
             //when `packedObject` stored enough values or entered an infinity loop because of bad data, break
             if (amount != nil && itemMarks.count == amount) || (dataSize + shift) == 0 {
                 if (dataSize + shift == 0) {
-                    throw UnpackingError.InvaildDataFormat
+                    throw UnpackingError.invaildDataFormat
                 }
                 break
             }

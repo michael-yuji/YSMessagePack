@@ -8,10 +8,6 @@
 
 import Foundation
 
-#if os(OSX)
-    import OpenCL
-#endif
-
 public extension NSData {
     
     /**
@@ -20,13 +16,9 @@ public extension NSData {
      - Parameter returnRemainingBytes: Return remaining bytes if error occurs or reached specified amount of unpacked objects, remaining bytes will be the last object in the returning array, default is `false`
      - returns: An `NSData` array packed with unpacked data, if return_remainingBytes is `ture`, the remaining bytes will store as the last object in the array
      */
-    public func unpack(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> [NSData] {
+    public func itemsUnpacked(forAmount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> [NSData] {
         var length: Int = 0
-        do {
-            return try unpack(specific_amount: amount, return_remainingBytes: returnRemainingBytes, dataLengthOutput: &length).0
-        } catch {
-            throw error
-        }
+        return try itemsAndTypesAfterUnpack( forAmount: amount, returnRemainingBytes: returnRemainingBytes, bytesHandled: &length).0
     }
     
     /**
@@ -35,13 +27,10 @@ public extension NSData {
      - Parameter returnRemainingBytes: Return remaining bytes if error occurs or reached specified amount of unpacked objects, remaining bytes will be the last object in the returning array, default is `false`
      - returns: A duple of an `NSData` array packed with unpacked data and an array of `[DataType]` which contains corresponding type for each data in `[NSData]` unpacked, if return_remainingBytes is `ture`, the  remaining bytes will store as the last object in the array
      */
-    public func unpackAsDupleOfDataDataTypeArray(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> (data: [NSData], type: [DataTypes]) {
+    public func dataAndTypesUnpacked(forAmount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> (data: [NSData], type: [DataTypes]) {
         var length: Int = 0
-        do {
-            return try unpack(specific_amount: amount, return_remainingBytes: returnRemainingBytes, dataLengthOutput: &length)
-        } catch {
-            throw error
-        }
+        let ret = try itemsAndTypesAfterUnpack( forAmount: amount, returnRemainingBytes: returnRemainingBytes, bytesHandled: &length)
+        return ret
     }
     
     /**
@@ -49,24 +38,23 @@ public extension NSData {
      - Parameter amount: Specific the amount of data going to unpack, the unpacking will stop at specified amount. Left it to `nil` will automatically unpack all the data
      - Parameter returnRemainingBytes: Return remaining bytes if error occurs or reached specified amount of unpacked objects, remaining bytes will be the last object in the returning array, default is `false`
      - returns:  An array of duples contain an unpacked data as `NSData` and its type as `DataType`, if return_remainingBytes is `ture`, the  remaining bytes will store as the last object in the array     */
-    public func unpackAsArrayOfDataTypeDataDuple(specific_amount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> [(data: NSData, type: DataTypes)] {
+    public func arrayOfDataAndTypesUnpacked(forAmount amount: Int? = nil, returnRemainingBytes: Bool = false) throws -> [(data: NSData, type: DataTypes)] {
         var length: Int = 0
-        do {
-            var temp: [(data:  NSData, type: DataTypes)] = []
-            let (data, type) = try unpack(specific_amount: amount, return_remainingBytes: returnRemainingBytes, dataLengthOutput: &length)
-            #if swift(>=3)
-            for (index, data) in data.enumerated() {
-                temp.append((data: data, type: type[index]))
-            }
-            #else
-            for (index, data) in data.enumerate() {
-                temp.append((data: data, type: type[index]))
-            }
-            #endif
-            return temp
-        } catch {
-            throw error
+        
+        var temp: [(data:  NSData, type: DataTypes)] = []
+        let (data, type) = try itemsAndTypesAfterUnpack(forAmount: amount, returnRemainingBytes: returnRemainingBytes, bytesHandled: &length)
+
+        #if swift(>=3)
+        for (index, data) in data.enumerated() {
+            temp.append((data: data, type: type[index]))
         }
+        #else
+        for (index, data) in data.enumerate() {
+            temp.append((data: data, type: type[index]))
+        }
+        #endif
+        return temp
+
     }
     
     #if swift(>=3)
@@ -86,7 +74,7 @@ public extension NSData {
         //        temp_byte_array.removeRange(Range<Int>(start: 0, end: index))   //remove the bytes before the index...
         temp_byte_array.removeSubrange(Range<Int>(0..<index)) //swift 3
         
-        let data_buffer = try? temp_byte_array.dataValue().unpack(specific_amount: count, return_remainingBytes: false, dataLengthOutput: &length).0
+        let data_buffer = try? temp_byte_array.dataValue().itemsAndTypesAfterUnpack(forAmount: count, returnRemainingBytes: false, bytesHandled: &length).0
         
         return (data_buffer == nil) ? nil : NSKeyedArchiver.archivedData(withRootObject: data_buffer! as NSArray)
     }
@@ -108,7 +96,7 @@ public extension NSData {
         //        temp_byte_array.removeRange(Range<Int>(start: 0, end: index))   //remove the bytes before index
         temp_byte_array.removeSubrange(0..<index) //swift 3
         
-        let data_buffer = try? temp_byte_array.dataValue().unpack(specific_amount: count * 2, return_remainingBytes: false, dataLengthOutput: &length).0 // 1 key, 1 value = 2 object at a count
+        let data_buffer = try? temp_byte_array.dataValue().itemsAndTypesAfterUnpack(forAmount: count * 2, returnRemainingBytes: false, bytesHandled: &length).0 // 1 key, 1 value = 2 object at a count
         
         while (data_buffer == nil) {
             return nil
@@ -137,7 +125,7 @@ public extension NSData {
         //        temp_byte_array.removeRange(Range<Int>(start: 0, end: index))   //remove the bytes before the index...
         temp_byte_array.removeRange(Range<Int>(0..<index)) //swift 3
         
-        let data_buffer = try? temp_byte_array.dataValue().unpack(specific_amount: count, return_remainingBytes: false, dataLengthOutput: &length).0
+        let data_buffer = try? temp_byte_array.dataValue().itemsAndTypesAfterUnpack(forAmount: count, returnRemainingBytes: false, bytesHandled: &length).0
         
         return (data_buffer == nil) ? nil : NSKeyedArchiver.archivedDataWithRootObject(data_buffer! as NSArray)
     }
@@ -151,7 +139,7 @@ public extension NSData {
      - Parameter length: the length (of bytes) of the messagepacked map will return to this instance
      - returns: An `NSData` that can convert to `NSDictionary`, if the return is nil, it identicated there's something wrong while unpacking objects inside the array
      */
-    private static func parsePackedMap(_ bytes: NSData, index: Int, count: Int, inout length: Int)   ->  NSData?
+    private static func parsePackedMap(_ bytes: NSData, index: Int, count: Int, inout length: Int) ->  NSData?
     {
         var temp_byte_array = bytes.byteArrayValue()            //byte array representation of data
         var dict: Dictionary<NSData, NSData>? = [:]                      //buffer
@@ -159,7 +147,7 @@ public extension NSData {
         //        temp_byte_array.removeRange(Range<Int>(start: 0, end: index))   //remove the bytes before index
         temp_byte_array.removeRange(0..<index) //swift 3
         
-        let data_buffer = try? temp_byte_array.dataValue().unpack(specific_amount: count * 2, return_remainingBytes: false, dataLengthOutput: &length).0 // 1 key, 1 value = 2 object at a count
+        let data_buffer = try? temp_byte_array.dataValue().itemsAndTypesAfterUnpack(forAmount: count * 2, returnRemainingBytes: false, bytesHandled: &length).0 // 1 key, 1 value = 2 object at a count
         
         while (data_buffer == nil) {
             return nil
@@ -192,22 +180,22 @@ public extension NSData {
         let length = self.byteArrayValue().count
         var count = 0
         while (i < length) {
-            do {
-                let dataArray = try unpack(startIndex: i, specific_amount: objectsInEachGroup, return_remainingBytes: false, dataLengthOutput: &i).0
+            
+                let dataArray = try itemsAndTypesAfterUnpack(fromIndex: i, forAmount: objectsInEachGroup, returnRemainingBytes: false, bytesHandled: &i).0
                 count += 1
                 if !handler(unpackedData: dataArray, isLast: (i == length) ||  count == setsCount) || count == setsCount {
                     break
                 }
-            } catch {
-                throw error
-            }
+            
         }
     }
     
     
     //MARK: God-like function for unpacking
     #if swift(>=3)
-    private func unpack(startIndex i_: Int = 0, specific_amount amount: Int? = nil, return_remainingBytes: Bool = false, dataLengthOutput len: inout Int) throws -> ([NSData], [DataTypes])
+    
+    private func itemsAndTypesAfterUnpack(fromIndex i_: Int = 0, forAmount amount: Int? = nil, returnRemainingBytes: Bool = false, bytesHandled len: inout Int) throws -> ([NSData], [DataTypes])
+//    private func unpack(startIndex i_: Int = 0, specific_amount amount: Int? = nil, return_remainingBytes: Bool = false, dataLengthOutput len: inout Int) throws -> ([NSData], [DataTypes])
     {
         var byte_array: ByteArray = self.byteArrayValue()
         var packedObjects         = [NSData]()
@@ -243,7 +231,7 @@ public extension NSData {
             
             //helper method
             func addRemainingBytes() {
-                if return_remainingBytes {
+                if returnRemainingBytes {
                     var remainingBytes = ByteArray(count: (byte_array.count - i), repeatedValue: 0)
                     //self.getBytes(&remainingBytes, range: NSRange.init(Range<Int>(start: i, end: byte_array.count)))
                     self.getBytes(&remainingBytes, range: NSRange.init(Range<Int>(i..<byte_array.count)))
@@ -260,7 +248,7 @@ public extension NSData {
                     packedObjects.append(data!)
                     i += shift
                     if amount != nil && packedObjects.count == amount {
-                        if return_remainingBytes {
+                        if returnRemainingBytes {
                             addRemainingBytes()
                         }
                         controlFlowState = .Break
@@ -274,25 +262,25 @@ public extension NSData {
                 
             //Nil
             case 0xc0:
-                type = .Nil
+                type = .`nil`
                 dataSize = _singleByteSize
                 try checkIfEnd([0xc0].dataValue(), shift: dataSize)
                 
             case 0xc2:
-                type = .Bool
+                type = .bool
                 dataSize = _singleByteSize
                 
                 try checkIfEnd([0x00].dataValue(), shift: dataSize)
                 
             case 0xc3:
-                type = .Bool
+                type = .bool
                 dataSize = _singleByteSize
                 
                 try checkIfEnd([0x01].dataValue(), shift: dataSize)
                 
             //bool
             case 0xc2, 0xc3:
-                type = .Bool            ;    dataSize = _singleByteSize
+                type = .bool            ;    dataSize = _singleByteSize
                 
             //bin
             case 0xc4:  type = .bin8    ;    dataSize = _8bitMarkupDataSize
@@ -304,10 +292,10 @@ public extension NSData {
             case 0xcb:  type = .float64 ;    dataSize = _64bitDataSize
                 
             //uint
-            case 0xcc:  type = .UInt8   ;    dataSize = _8bitDataSize
-            case 0xcd:  type = .UInt16  ;    dataSize = _16bitDataSize
-            case 0xce:  type = .UInt32  ;    dataSize = _32bitDataSize
-            case 0xcf:  type = .UInt64  ;    dataSize = _64bitDataSize
+            case 0xcc:  type = .uInt8   ;    dataSize = _8bitDataSize
+            case 0xcd:  type = .uInt16  ;    dataSize = _16bitDataSize
+            case 0xce:  type = .uInt32  ;    dataSize = _32bitDataSize
+            case 0xcf:  type = .uInt64  ;    dataSize = _64bitDataSize
                 
                 //int
                 
@@ -315,18 +303,18 @@ public extension NSData {
                 type = .fixInt          ;    dataSize = _singleByteSize
             case 0b11100000..<0b11111111:
                 type = .fixNegativeInt  ;    dataSize = _singleByteSize
-            case 0xd0:  type = .Int8    ;    dataSize = _8bitDataSize
-            case 0xd1:  type = .Int16   ;    dataSize = _16bitDataSize
-            case 0xd2:  type = .Int32   ;    dataSize = _32bitDataSize
-            case 0xd3:  type = .Int64   ;    dataSize = _64bitDataSize
+            case 0xd0:  type = .int8    ;    dataSize = _8bitDataSize
+            case 0xd1:  type = .int16   ;    dataSize = _16bitDataSize
+            case 0xd2:  type = .int32   ;    dataSize = _32bitDataSize
+            case 0xd3:  type = .int64   ;    dataSize = _64bitDataSize
                 
                 
             //String
             case 0b101_00000...0b101_11111:
                 type = .fixstr  ;    dataSize = _fixStrDataMarkupSize
-            case 0xd9:  type = .Str_8bit;    dataSize = _8bitMarkupDataSize
-            case 0xda:  type = .Str_16bit;   dataSize = _16bitMarkupDataSize
-            case 0xdb:  type = .Str_32bit;   dataSize = _32bitMarkupDataSize
+            case 0xd9:  type = .str8bit;    dataSize = _8bitMarkupDataSize
+            case 0xda:  type = .str16bit;   dataSize = _16bitMarkupDataSize
+            case 0xdb:  type = .str32bit;   dataSize = _32bitMarkupDataSize
                 
             //array
             case 0b10010000...0b10011111:
@@ -370,7 +358,7 @@ public extension NSData {
                 let data                    = NSData.parsePackedMap(self, index: i + 1 + 4, count: count, length: &length)
                 try checkIfEnd(data, shift: length + 1 + 4)
                 dataTypes.append(.map32)
-            default: throw UnpackingError.UnknownDataType_undifined_prefix
+            default: throw UnpackingError.unknownDataTypeUndifinedPrefix
             }
             
             if case controlFlowState = control_flow.Break {
@@ -388,15 +376,15 @@ public extension NSData {
             self.getBytes(&temp, range: NSRange.init(Range<Int>(i+shift..<i+shift+dataSize)))
             switch type {
             //Since message pack is using big edian, we have to flip the bytes to make it useful
-            case .UInt8, .UInt16, .UInt32, .UInt64,
-                 .Int8,  .Int16,  .Int32,  .Int64, .float64, .float32:
+            case .uInt8, .uInt16, .uInt32, .uInt64,
+                 .int8,  .int16,  .int32,  .int64, .float64, .float32:
                 temp.flip()
                 
             case .fixNegativeInt:
                 //
                 let x   = [temp[0] ^ 0b11100000].dataValue()
                 var n_i = -x.castToInt
-                temp[0] = NSData(bytes: &n_i, length: 1).byte_array[0]
+                temp[0] = NSData(bytes: &n_i, length: 1).byteArray[0]
                 
             default: break
             }
@@ -407,9 +395,9 @@ public extension NSData {
             
             //when `packedObject` stored enough values or entered an infinity loop because of bad data, break
             if (amount != nil && packedObjects.count == amount) || (dataSize + shift) == 0 {
-                if return_remainingBytes {addRemainingBytes()}
+                if returnRemainingBytes {addRemainingBytes()}
                 else if (dataSize + shift == 0) {
-                    throw UnpackingError.InvaildDataFormat
+                    throw UnpackingError.invaildDataFormat
                 }
                 break
             }
@@ -426,7 +414,8 @@ public extension NSData {
      - Parameter dataLengthOutout: the length (of bytes) of the unpacker handled will output to here
      - returns: An `NSData` array packed with unpacked data, if return_remainingBytes is `ture`, the remaining bytes will store as the last object in the array
      */
-    private func unpack(startIndex i_: Int = 0, specific_amount amount: Int? = nil, return_remainingBytes: Bool = false, inout dataLengthOutput len: Int) throws -> ([NSData], [DataTypes])
+    private func itemsAndTypesAfterUnpack(fromIndex i_: Int = 0, forAmount amount: Int? = nil, returnRemainingBytes: Bool = false, inout bytesHandled len: Int) throws -> ([NSData], [DataTypes])
+//    private func unpack(startIndex i_: Int = 0, specific_amount amount: Int? = nil, return_remainingBytes: Bool = false, inout dataLengthOutput len: Int) throws -> ([NSData], [DataTypes])
     {
         var byte_array: ByteArray = self.byteArrayValue()
         var packedObjects         = [NSData]()
@@ -462,7 +451,7 @@ public extension NSData {
             
             //helper method
             func addRemainingBytes() {
-                if return_remainingBytes {
+                if returnRemainingBytes {
                     var remainingBytes = ByteArray(count: (byte_array.count - i), repeatedValue: 0)
                     //self.getBytes(&remainingBytes, range: NSRange.init(Range<Int>(start: i, end: byte_array.count)))
                     self.getBytes(&remainingBytes, range: NSRange.init(Range<Int>(i..<byte_array.count)))
@@ -479,7 +468,7 @@ public extension NSData {
                     packedObjects.append(data!)
                     i += shift
                     if amount != nil && packedObjects.count == amount {
-                        if return_remainingBytes {
+                        if returnRemainingBytes {
                             addRemainingBytes()
                         }
                         controlFlowState = .Break
@@ -493,25 +482,25 @@ public extension NSData {
                 
             //Nil
             case 0xc0:
-                type = .Nil
+                type = .`nil`
                 dataSize = _singleByteSize
                 try checkIfEnd([0xc0].dataValue(), shift: dataSize)
                 
             case 0xc2:
-                type = .Bool
+                type = .bool
                 dataSize = _singleByteSize
                 
                 try checkIfEnd([0x00].dataValue(), shift: dataSize)
                 
             case 0xc3:
-                type = .Bool
+                type = .bool
                 dataSize = _singleByteSize
                 
                 try checkIfEnd([0x01].dataValue(), shift: dataSize)
                 
             //bool
             case 0xc2, 0xc3:
-                type = .Bool            ;    dataSize = _singleByteSize
+                type = .bool            ;    dataSize = _singleByteSize
                 
             //bin
             case 0xc4:  type = .bin8    ;    dataSize = _8bitMarkupDataSize
@@ -523,10 +512,10 @@ public extension NSData {
             case 0xcb:  type = .float64 ;    dataSize = _64bitDataSize
                 
             //uint
-            case 0xcc:  type = .UInt8   ;    dataSize = _8bitDataSize
-            case 0xcd:  type = .UInt16  ;    dataSize = _16bitDataSize
-            case 0xce:  type = .UInt32  ;    dataSize = _32bitDataSize
-            case 0xcf:  type = .UInt64  ;    dataSize = _64bitDataSize
+            case 0xcc:  type = .uInt8   ;    dataSize = _8bitDataSize
+            case 0xcd:  type = .uInt16  ;    dataSize = _16bitDataSize
+            case 0xce:  type = .uInt32  ;    dataSize = _32bitDataSize
+            case 0xcf:  type = .uInt64  ;    dataSize = _64bitDataSize
                 
                 //int
                 
@@ -534,18 +523,18 @@ public extension NSData {
                 type = .fixInt          ;    dataSize = _singleByteSize
             case 0b11100000..<0b11111111:
                 type = .fixNegativeInt  ;    dataSize = _singleByteSize
-            case 0xd0:  type = .Int8    ;    dataSize = _8bitDataSize
-            case 0xd1:  type = .Int16   ;    dataSize = _16bitDataSize
-            case 0xd2:  type = .Int32   ;    dataSize = _32bitDataSize
-            case 0xd3:  type = .Int64   ;    dataSize = _64bitDataSize
+            case 0xd0:  type = .int8    ;    dataSize = _8bitDataSize
+            case 0xd1:  type = .int16   ;    dataSize = _16bitDataSize
+            case 0xd2:  type = .int32   ;    dataSize = _32bitDataSize
+            case 0xd3:  type = .int64   ;    dataSize = _64bitDataSize
                 
                 
             //String
             case 0b101_00000...0b101_11111:
                 type = .fixstr  ;    dataSize = _fixStrDataMarkupSize
-            case 0xd9:  type = .Str_8bit;    dataSize = _8bitMarkupDataSize
-            case 0xda:  type = .Str_16bit;   dataSize = _16bitMarkupDataSize
-            case 0xdb:  type = .Str_32bit;   dataSize = _32bitMarkupDataSize
+            case 0xd9:  type = .str8bit;    dataSize = _8bitMarkupDataSize
+            case 0xda:  type = .str16bit;   dataSize = _16bitMarkupDataSize
+            case 0xdb:  type = .str32bit;   dataSize = _32bitMarkupDataSize
                 
             //array
             case 0b10010000...0b10011111:
@@ -589,7 +578,7 @@ public extension NSData {
                 let data                    = NSData.parsePackedMap(self, index: i + 1 + 4, count: count, length: &length)
                 try checkIfEnd(data, shift: length + 1 + 4)
                 dataTypes.append(.map32)
-            default: throw UnpackingError.UnknownDataType_undifined_prefix
+            default: throw UnpackingError.unknownDataTypeUndifinedPrefix
             }
             
             if case controlFlowState = control_flow.Break {
@@ -607,15 +596,15 @@ public extension NSData {
             self.getBytes(&temp, range: NSRange.init(Range<Int>(i+shift..<i+shift+dataSize)))
             switch type {
             //Since message pack is using big edian, we have to flip the bytes to make it useful
-            case .UInt8, .UInt16, .UInt32, .UInt64,
-                 .Int8,  .Int16,  .Int32,  .Int64, .float64, .float32:
+            case .uInt8, .uInt16, .uInt32, .uInt64,
+                 .int8,  .int16,  .int32,  .int64, .float64, .float32:
                 temp.flip()
                 
             case .fixNegativeInt:
                 //
                 let x   = [temp[0] ^ 0b11100000].dataValue()
                 var n_i = -x.castToInt
-                temp[0] = NSData(bytes: &n_i, length: 1).byte_array[0]
+                temp[0] = NSData(bytes: &n_i, length: 1).byteArray[0]
                 
             default: break
             }
@@ -626,9 +615,9 @@ public extension NSData {
             
             //when `packedObject` stored enough values or entered an infinity loop because of bad data, break
             if (amount != nil && packedObjects.count == amount) || (dataSize + shift) == 0 {
-                if return_remainingBytes {addRemainingBytes()}
+                if returnRemainingBytes {addRemainingBytes()}
                 else if (dataSize + shift == 0) {
-                    throw UnpackingError.InvaildDataFormat
+                    throw UnpackingError.invaildDataFormat
                 }
                 break
             }
@@ -648,7 +637,7 @@ public extension NSData {
             let queue = DispatchQueue.global()
             queue.async(execute: {
                 var i = 0
-                let parsed = try? parseData(messagePackedBytes: self.byte_array,specific_amount: amount, dataLengthOutput: &i)
+                let parsed = try? parseData(messagePackedBytes: self.byteArray,specific_amount: amount, dataLengthOutput: &i)
                 if let parsed = parsed {
                     let group = DispatchGroup()
                     let que = DispatchQueue.global()
@@ -657,7 +646,7 @@ public extension NSData {
                             let range = NSMakeRange(s.0.lowerBound, s.0.upperBound - s.0.lowerBound)
                             var buf = ByteArray(count: range.length, repeatedValue: 0)
                             self.getBytes(&buf, range: range)
-                            let data = try! NSData(bytes: buf, length: range.length).unpack(specific_amount: 1, returnRemainingBytes: false)[0]
+                            let data = try! NSData(bytes: buf, length: range.length).itemsUnpacked(forAmount: 1, returnRemainingBytes: false)[0]
                             competitionHandler(data: data, type: s.1, atIndex: index)
                         })
                     }
@@ -667,7 +656,7 @@ public extension NSData {
         
         dispatch_async(dispatch_get_global_queue(priority, 0)) {
             var i = 0;
-            let parsed = try? parseData(messagePackedBytes: self.byte_array,specific_amount: amount, dataLengthOutput: &i)
+            let parsed = try? parseData(messagePackedBytes: self.byteArray,specific_amount: amount, dataLengthOutput: &i)
         
             if let parsed = parsed {
                 
@@ -678,7 +667,7 @@ public extension NSData {
                         let range = NSMakeRange(s.0.startIndex, s.0.endIndex - s.0.startIndex)
                         var buf = ByteArray(count: range.length, repeatedValue: 0)
                         self.getBytes(&buf, range: range)
-                        let data = try! NSData(bytes: buf, length: range.length).unpack(specific_amount: 1, returnRemainingBytes: false)[0]
+                        let data = try! NSData(bytes: buf, length: range.length).itemsUnpacked(forAmount: 1, returnRemainingBytes: false)[0]
                         competitionHandler(data: data, type: s.1, atIndex: index)
                     })
                 }
@@ -694,7 +683,7 @@ public extension NSData {
             
             DispatchQueue.global().async(execute: {
                 var i = 0
-                let parsed = try? parseData(messagePackedBytes: self.byte_array,specific_amount: amount, dataLengthOutput: &i)
+                let parsed = try? parseData(messagePackedBytes: self.byteArray,specific_amount: amount, dataLengthOutput: &i)
                 
                 if let parsed = parsed {
                     
@@ -706,7 +695,7 @@ public extension NSData {
                             let range = NSMakeRange(s.0.lowerBound, s.0.upperBound - s.0.lowerBound)
                             var buf = ByteArray(count: range.length, repeatedValue: 0)
                             self.getBytes(&buf, range: range)
-                            let data = try! NSData(bytes: buf, length: range.length).unpack(specific_amount: 1, returnRemainingBytes: false)[0]
+                            let data = try! NSData(bytes: buf, length: range.length).itemsUnpacked(forAmount: 1, returnRemainingBytes: false)[0]
                             output[index] = data
                         })
                     }
@@ -720,7 +709,7 @@ public extension NSData {
         #else
         dispatch_async(dispatch_get_global_queue(priority, 0)) {
             var i = 0;
-            let parsed = try? parseData(messagePackedBytes: self.byte_array,specific_amount: amount, dataLengthOutput: &i)
+            let parsed = try? parseData(messagePackedBytes: self.byteArray,specific_amount: amount, dataLengthOutput: &i)
             
             if let parsed = parsed {
                 
@@ -732,7 +721,7 @@ public extension NSData {
                         let range = NSMakeRange(s.0.startIndex, s.0.endIndex - s.0.startIndex)
                         var buf = ByteArray(count: range.length, repeatedValue: 0)
                         self.getBytes(&buf, range: range)
-                        let data = try! NSData(bytes: buf, length: range.length).unpack(specific_amount: 1, returnRemainingBytes: false)[0]
+                        let data = try! NSData(bytes: buf, length: range.length).itemsUnpacked(forAmount: 1, returnRemainingBytes: false)[0]
                         output[index] = data
                     })
                 }

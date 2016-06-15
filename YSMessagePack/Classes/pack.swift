@@ -31,13 +31,13 @@ public class Nil : Packable {
  - parameter withOptions packing options
  */
 
-public func packItems(things_to_pack: [Packable?], withOptions options: packOptions = [.PackWithASCIIStringEncoding]) -> NSData
+public func pack(items items: [Packable?], withOptions options: packOptions = [.PackWithASCIIStringEncoding]) -> NSData
 {
     var byteArray = ByteArray()
     
-    for item in things_to_pack
+    for item in items
     {
-        packtype(&byteArray, item: item, options: options)
+        pack(item: item, appendToBytes: &byteArray, withOptions: options)
     }
 
     return byteArray.dataValue()
@@ -59,7 +59,7 @@ public func packItems(things_to_pack: [Packable?], withOptions options: packOpti
 //}
 
 #if swift(>=3)
-    private func packtype(_ byteArray: inout [UInt8], item: Packable?, options: packOptions = [.PackWithASCIIStringEncoding])
+    private func pack(item: Packable?, appendToBytes byteArray: inout [UInt8], withOptions options: packOptions = [.PackWithASCIIStringEncoding])
     {
         if item == nil {
             byteArray += [0xc0]
@@ -71,16 +71,16 @@ public func packItems(things_to_pack: [Packable?], withOptions options: packOpti
             
         case .Custom:
             for i in item!.packFormat() {
-                packtype(&byteArray, item: i)
+                pack(item: i, appendToBytes: &byteArray)
             }
             
         case .String:
             let str = item as! String
-//            var encoding: NSStringEncoding = NSASCIIStringEncoding
+
             var encoding: String.Encoding = .ascii
             if options.rawValue & packOptions.PackWithASCIIStringEncoding.rawValue == 0 {
                 if options.rawValue & packOptions.PackWithUTF8StringEncoding.rawValue != 0 {
-//                    encoding = NSUTF8StringEncoding
+
                     encoding = .utf8
                 }
             }
@@ -98,33 +98,33 @@ public func packItems(things_to_pack: [Packable?], withOptions options: packOpti
                     }
                 }
             }
-            byteArray += int.pack().byteArrayValue()
+            byteArray += int.packed().byteArrayValue()
             
         case .Uint:
             let uint = item as! UInt64
-            byteArray += uint.pack().byteArrayValue()
+            byteArray += uint.packed().byteArrayValue()
             
         case .Float:
-            byteArray += (item as! Double).pack().byteArrayValue()
+            byteArray += (item as! Double).packed().byteArrayValue()
             
         case .Bool:
-            byteArray += (item as! Bool).pack().byteArrayValue()
+            byteArray += (item as! Bool).packed().byteArrayValue()
             
         case .Data:
-            byteArray += (item as! NSData).pack().byteArrayValue()
+            byteArray += (item as! NSData).packed().byteArrayValue()
             
         case .Array:
-            byteArray += (item as! [AnyObject]).pack().byteArrayValue()
+            byteArray += (item as! [AnyObject]).packed().byteArrayValue()
             
         case .Dictionary:
-            byteArray += (item as! NSDictionary).pack().byteArrayValue()
-            
+            byteArray += (item as! NSDictionary).packed().byteArrayValue()
+    
         case .Nil:
             byteArray += [0xc0]
         }
     }
 #else
-private func packtype(inout byteArray: [UInt8], item: Packable?, options: packOptions = [.PackWithASCIIStringEncoding])
+private func pack(item item: Packable?, inout appendToBytes byteArray: [UInt8], withOptions options: packOptions = [.PackWithASCIIStringEncoding])
 {
     if item == nil {
         byteArray += [0xc0]
@@ -136,7 +136,7 @@ private func packtype(inout byteArray: [UInt8], item: Packable?, options: packOp
     
     case .Custom:
         for i in item!.packFormat() {
-            packtype(&byteArray, item: i)
+            pack(item: i, appendToBytes: &byteArray)
         }
         
     case .String:
@@ -162,26 +162,26 @@ private func packtype(inout byteArray: [UInt8], item: Packable?, options: packOp
                 }
             }
         }
-        byteArray += int.pack().byteArrayValue()
+        byteArray += int.packed().byteArrayValue()
         
     case .Uint:
         let uint = item as! UInt64
-        byteArray += uint.pack().byteArrayValue()
+        byteArray += uint.packed().byteArrayValue()
         
     case .Float:
-        byteArray += (item as! Double).pack().byteArrayValue()
+        byteArray += (item as! Double).packed().byteArrayValue()
     
     case .Bool:
-        byteArray += (item as! Bool).pack().byteArrayValue()
+        byteArray += (item as! Bool).packed().byteArrayValue()
         
     case .Data:
-        byteArray += (item as! NSData).pack().byteArrayValue()
+        byteArray += (item as! NSData).packed().byteArrayValue()
         
     case .Array:
-        byteArray += (item as! [AnyObject]).pack().byteArrayValue()
+        byteArray += (item as! [AnyObject]).packed().byteArrayValue()
         
     case .Dictionary:
-        byteArray += (item as! NSDictionary).pack().byteArrayValue()
+        byteArray += (item as! NSDictionary).packed().byteArrayValue()
         
     case .Nil:
         byteArray += [0xc0]
@@ -189,22 +189,22 @@ private func packtype(inout byteArray: [UInt8], item: Packable?, options: packOp
 }
 #endif
 
-private func size_after_pack_calculator<T>(_ item_to_switch: T) -> Int {
+private func calculateSizeAfterPack<T>(forItem item: T) -> Int {
     var i = 0
-    switch item_to_switch {
+    switch item {
     case is String:
-        let str = item_to_switch as! String
+        let str = item as! String
         #if swift(>=3)
-            try! i += str.pack(withEncoding: .ascii)!.byte_array.count
+            try! i += str.pack(withEncoding: .ascii)!.byteArray.count
         #else
             try! i += str.pack(withEncoding: NSASCIIStringEncoding)!.byteArrayValue().count
         #endif
     case is Int:
-        let int = item_to_switch as! Int
-        i += int.pack().byteArrayValue().count
+        let int = item as! Int
+        i += int.packed().byteArrayValue().count
         
     case is NSData:
-        i += (item_to_switch as! NSData).byteArrayValue().count
+        i += (item as! NSData).byteArrayValue().count
     default: break
     }
     return i
@@ -213,7 +213,7 @@ private func size_after_pack_calculator<T>(_ item_to_switch: T) -> Int {
 //MARK: Bool
 
 extension Bool : Packable {
-    public func pack() -> NSData {
+    public func packed() -> NSData {
         switch self {
         case true:  return [0xc3].dataValue()
         case false: return [0xc2].dataValue()
@@ -324,7 +324,7 @@ extension StringLiteralType : Packable {
 //MARK: Integers
 public extension UnsignedIntegerType
 {
-    public func pack() -> NSData
+    public func packed() -> NSData
     {
         var value  = self
         var param: (prefix: UInt8, size: size_t)!
@@ -357,7 +357,7 @@ public extension UnsignedIntegerType
 
 
 public extension SignedIntegerType {
-    public func pack() -> NSData
+    public func packed() -> NSData
     {
     
         var value  = self
@@ -399,7 +399,7 @@ public extension SignedIntegerType {
 
 //MARK: Floating Point
 extension FloatingPointType {
-    public func pack() -> NSData
+    public func packed() -> NSData
     {
         var value = self
         var param: (prefix: UInt8, size: size_t)!
@@ -546,10 +546,10 @@ extension UInt64 : Packable {
 //MARK: Binary
 
 public extension NSData {
-    public func pack() -> NSData
+    public func packed() -> NSData
     {
         var prefix: UInt8!
-        var temp = self.length.pack().byteArrayValue()
+        var temp = self.length.packed().byteArrayValue()
         
         #if arch(arm) || arch(i386)
             switch self.length {
@@ -566,7 +566,7 @@ public extension NSData {
             }
         #endif
         temp[0] = prefix
-        temp += self.byte_array
+        temp += self.byteArray
         return temp.dataValue()
     }
     
@@ -578,7 +578,7 @@ public extension NSData {
 //MARK: Dictionary/Map
 extension NSDictionary : Packable
 {
-    public func pack() -> NSData
+    public func packed() -> NSData
     {
         var byteArray = ByteArray()
         
@@ -606,8 +606,10 @@ extension NSDictionary : Packable
         #endif
         
         for (key, value) in self {
-            packtype(&byteArray, item: key as? Packable)
-            packtype(&byteArray, item: value as? Packable)
+//            pack(&byteArray, item: key as? Packable)
+            pack(item: key as? Packable, appendToBytes: &byteArray)
+//            pack(&byteArray, item: value as? Packable)
+            pack(item: value as? Packable, appendToBytes: &byteArray)
         }
         return byteArray.dataValue()
     }
@@ -615,8 +617,8 @@ extension NSDictionary : Packable
     private var byteArray_length: size_t {
         var i = 0
         for (key, value) in self {
-            i += size_after_pack_calculator(key)
-            i += size_after_pack_calculator(value)
+            i += calculateSizeAfterPack(forItem: key)
+            i += calculateSizeAfterPack(forItem: value)
         }
         return i
     }
@@ -632,7 +634,7 @@ extension NSDictionary : Packable
 
 extension Dictionary : Packable
 {
-    public func pack() -> NSData
+    public func packed() -> NSData
     {
         var byteArray = ByteArray()
         
@@ -660,8 +662,9 @@ extension Dictionary : Packable
         #endif
         
         for (key, value) in self {
-            packtype(&byteArray, item: key as? Packable)
-            packtype(&byteArray, item: value as? Packable)
+            pack(item: key as? Packable, appendToBytes: &byteArray)
+            //            pack(&byteArray, item: value as? Packable)
+            pack(item: value as? Packable, appendToBytes: &byteArray)
         }
 
         return byteArray.dataValue()
@@ -680,7 +683,7 @@ extension Dictionary : Packable
 //MARK: Array
 extension NSArray : Packable
 {
-    public func pack() -> NSData
+    public func packed() -> NSData
     {
         var byteArray = ByteArray()
         
@@ -708,8 +711,8 @@ extension NSArray : Packable
         #endif
         
         for value in self {
-//            pack_any_type(&byteArray, item: value)
-            packtype(&byteArray, item: value as? Packable)
+//            pack(&byteArray, item: value as? Packable)
+            pack(item: value as? Packable, appendToBytes: &byteArray)
         }
         return byteArray.dataValue()
     }
@@ -717,7 +720,7 @@ extension NSArray : Packable
     private var byteArray_length: size_t {
         var i = 0
         for item in self {
-            i += size_after_pack_calculator(item)
+            i += calculateSizeAfterPack(forItem: item)
         }
         return i
     }
@@ -733,7 +736,7 @@ extension NSArray : Packable
 
 extension Array : Packable
 {
-    public func pack() -> NSData
+    public func packed() -> NSData
     {
         var byteArray = ByteArray()
         
@@ -761,7 +764,8 @@ extension Array : Packable
         #endif
         
         for value in self {
-            packtype(&byteArray, item: value as? Packable)
+//            pack(&byteArray, item: value as? Packable)
+            pack(item: value as? Packable, appendToBytes: &byteArray)
         }
         return byteArray.dataValue()
     }
@@ -769,7 +773,7 @@ extension Array : Packable
     private var byteArray_length: size_t {
         var i = 0
         for item in self {
-            i += size_after_pack_calculator(item)
+            i += calculateSizeAfterPack(forItem: item)
         }
         return i
     }

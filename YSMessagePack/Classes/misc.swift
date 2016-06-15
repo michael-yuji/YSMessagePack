@@ -135,24 +135,26 @@ public enum PackingError: ErrorType
 
 public enum UnpackingError: ErrorType
 {
-    case cannotUnpackMap_bad_map_data
-    case UnknownDataType_undifined_prefix
-    case UnknownDataType_cannot_find_type_to_match_prefix
-    case InvaildDataFormat
+//    case cannotUnpackMap_bad_map_data
+    case unknownDataTypeUndifinedPrefix
+    case unknownDataTypeCannotFindTypeToMatchPrefix
+    case unvaildDataFormat
+    case invalidDataType
+    case invaildDataFormat
 }
 
 public enum DataTypes: Int {
-    case Nil
+    case `nil`
     case fixstr
-    case Bool
-    case Str_8bit
-    case Str_16bit
-    case Str_32bit
+    case bool
+    case str8bit
+    case str16bit
+    case str32bit
     case fixInt,    fixNegativeInt
-    case UInt8,     Int8
-    case UInt16,    Int16
-    case UInt32,    Int32
-    case UInt64,    Int64
+    case uInt8,     int8
+    case uInt16,    int16
+    case uInt32,    int32
+    case uInt64,    int64
     case float32,   float64
     case bin8, bin16, bin32
     case fixarray, array16, array32
@@ -162,8 +164,8 @@ public enum DataTypes: Int {
     func getDataPrefixSize() throws ->  Int {
         var shift = 0
         switch self {
-        case .Nil:          shift = 0
-        case .Bool:         shift = 0
+        case .`nil`:          shift = 0
+        case .bool:         shift = 0
         case .fixInt,
              .fixNegativeInt:    shift = 0
         case .fixstr,
@@ -171,26 +173,26 @@ public enum DataTypes: Int {
              .float64,
              .fixarray,
              .fixmap:       shift = 1
-        case .Str_8bit,
+        case .str8bit,
              .bin8:         shift = 2
-        case .Str_16bit,
+        case .str16bit,
              .bin16,
              .array16,
              .map16:        shift = 3
-        case .Str_32bit,
+        case .str32bit,
              .bin32,
              .array32,
              .map32:        shift = 5
-        case .UInt8,
-             .UInt16,
-             .UInt32,
-             .UInt64,
-             .Int8,
-             .Int16,
-             .Int32,
-             .Int64:        shift = 1
+        case .uInt8,
+             .uInt16,
+             .uInt32,
+             .uInt64,
+             .int8,
+             .int16,
+             .int32,
+             .int64:        shift = 1
         default:
-            throw UnpackingError.UnknownDataType_cannot_find_type_to_match_prefix
+            throw UnpackingError.unknownDataTypeCannotFindTypeToMatchPrefix
         }
         return shift
     }
