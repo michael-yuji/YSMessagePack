@@ -30,5 +30,5 @@ TODO: Add long description of the pod here.
 
   s.ios.deployment_target = '8.0'
 
-  s.source_files = 'YSMessagePack/Classes/**/*'
+  s.source_files = 'Sources/**/*'
 end  
