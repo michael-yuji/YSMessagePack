@@ -1,0 +1,270 @@
+// !$*UTF8*$!
+{
+    archiveVersion = 1;
+    classes = {};
+    objectVersion = 46;
+    rootObject = __RootObject_;
+    objects = {
+        __RootObject_ = {
+            isa = PBXProject;
+            attributes = {LastUpgradeCheck = 9999;};
+            buildConfigurationList = ___RootConfs_;
+            compatibilityVersion = 'Xcode 3.2';
+            developmentRegion = English;
+            hasScannedForEncodings = 0;
+            knownRegions = (en);
+            mainGroup = ___RootGroup_;
+            productRefGroup = ____Products_;
+            projectDirPath = '';
+            projectRoot = '';
+            targets = (______Target_YSMessagePack, ______Target_YSMessagePackTests);
+        };
+        '__PBXFileRef_Package.swift' = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = 'Package.swift';
+            sourceTree = '<group>';
+        };
+        ___RootGroup_ = {
+            isa = PBXGroup;
+            children = ('__PBXFileRef_Package.swift', _____Configs_, _____Sources_,  Dependencies_, _______Tests_, ____Products_);
+            sourceTree = '<group>';
+        };
+        _______Group_YSMessagePack = {
+            isa = PBXGroup;
+            name = 'YSMessagePack';
+            path = 'Sources';
+            sourceTree = '<group>';
+            children = ('__PBXFileRef_Sources/misc.swift', '__PBXFileRef_Sources/NSDataCasters.swift', '__PBXFileRef_Sources/operators.swift', '__PBXFileRef_Sources/pack.swift', '__PBXFileRef_Sources/parse.swift', '__PBXFileRef_Sources/unpack.swift');
+        };
+        '__PBXFileRef_Sources/misc.swift' = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = 'misc.swift';
+            sourceTree = '<group>';
+        };
+        '__PBXFileRef_Sources/NSDataCasters.swift' = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = 'NSDataCasters.swift';
+            sourceTree = '<group>';
+        };
+        '__PBXFileRef_Sources/operators.swift' = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = 'operators.swift';
+            sourceTree = '<group>';
+        };
+        '__PBXFileRef_Sources/pack.swift' = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = 'pack.swift';
+            sourceTree = '<group>';
+        };
+        '__PBXFileRef_Sources/parse.swift' = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = 'parse.swift';
+            sourceTree = '<group>';
+        };
+        '__PBXFileRef_Sources/unpack.swift' = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = 'unpack.swift';
+            sourceTree = '<group>';
+        };
+        ______Target_YSMessagePack = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = _______Confs_YSMessagePack;
+            buildPhases = (CompilePhase_YSMessagePack, ___LinkPhase_YSMessagePack);
+            buildRules = ();
+            dependencies = ();
+            name = 'YSMessagePack';
+            productName = YSMessagePack;
+            productReference = _____Product_YSMessagePack;
+            productType = 'com.apple.product-type.framework';
+        };
+        _____Product_YSMessagePack = {
+            isa = PBXFileReference;
+            explicitFileType = 'wrapper.framework';
+            path = 'YSMessagePack.framework';
+            sourceTree = BUILT_PRODUCTS_DIR;
+        };
+        CompilePhase_YSMessagePack = {
+            isa = PBXSourcesBuildPhase;
+            files = ('__src_cc_ref_Sources/misc.swift', '__src_cc_ref_Sources/NSDataCasters.swift', '__src_cc_ref_Sources/operators.swift', '__src_cc_ref_Sources/pack.swift', '__src_cc_ref_Sources/parse.swift', '__src_cc_ref_Sources/unpack.swift');
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        '__src_cc_ref_Sources/misc.swift' = {
+            isa = PBXBuildFile;
+            fileRef = '__PBXFileRef_Sources/misc.swift';
+        };
+        '__src_cc_ref_Sources/NSDataCasters.swift' = {
+            isa = PBXBuildFile;
+            fileRef = '__PBXFileRef_Sources/NSDataCasters.swift';
+        };
+        '__src_cc_ref_Sources/operators.swift' = {
+            isa = PBXBuildFile;
+            fileRef = '__PBXFileRef_Sources/operators.swift';
+        };
+        '__src_cc_ref_Sources/pack.swift' = {
+            isa = PBXBuildFile;
+            fileRef = '__PBXFileRef_Sources/pack.swift';
+        };
+        '__src_cc_ref_Sources/parse.swift' = {
+            isa = PBXBuildFile;
+            fileRef = '__PBXFileRef_Sources/parse.swift';
+        };
+        '__src_cc_ref_Sources/unpack.swift' = {
+            isa = PBXBuildFile;
+            fileRef = '__PBXFileRef_Sources/unpack.swift';
+        };
+        ___LinkPhase_YSMessagePack = {
+            isa = PBXFrameworksBuildPhase;
+            files = ();
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        _______Confs_YSMessagePack = {
+            isa = XCConfigurationList;
+            buildConfigurations = (___DebugConf_YSMessagePack, _ReleaseConf_YSMessagePack);
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Debug;
+        };
+        ___DebugConf_YSMessagePack = {
+            isa = XCBuildConfiguration;
+            buildSettings = { SWIFT_VERSION = '3.0'; LD_RUNPATH_SEARCH_PATHS = '$(TOOLCHAIN_DIR)/usr/lib/swift/macosx'; PRODUCT_MODULE_NAME = '$(TARGET_NAME:c99extidentifier)'; ENABLE_TESTABILITY = 'YES'; OTHER_SWIFT_FLAGS = '$(inherited)'; INFOPLIST_FILE = 'YSMessagePack.xcodeproj/YSMessagePack_Info.plist'; FRAMEWORK_SEARCH_PATHS = '$(PLATFORM_DIR)/Developer/Library/Frameworks'; SWIFT_OPTIMIZATION_LEVEL = '-Onone'; PRODUCT_BUNDLE_IDENTIFIER = 'YSMessagePack'; PRODUCT_NAME = '$(TARGET_NAME:c99extidentifier)'; OTHER_LDFLAGS = '$(inherited)'; };
+            name = Debug;
+        };
+        _ReleaseConf_YSMessagePack = {
+            isa = XCBuildConfiguration;
+            buildSettings = { SWIFT_VERSION = '3.0'; LD_RUNPATH_SEARCH_PATHS = '$(TOOLCHAIN_DIR)/usr/lib/swift/macosx'; PRODUCT_MODULE_NAME = '$(TARGET_NAME:c99extidentifier)'; ENABLE_TESTABILITY = 'YES'; OTHER_SWIFT_FLAGS = '$(inherited)'; INFOPLIST_FILE = 'YSMessagePack.xcodeproj/YSMessagePack_Info.plist'; FRAMEWORK_SEARCH_PATHS = '$(PLATFORM_DIR)/Developer/Library/Frameworks'; PRODUCT_BUNDLE_IDENTIFIER = 'YSMessagePack'; PRODUCT_NAME = '$(TARGET_NAME:c99extidentifier)'; OTHER_LDFLAGS = '$(inherited)'; };
+            name = Release;
+        };
+        __Dependency_YSMessagePack = {
+            isa = PBXTargetDependency;
+            target = ______Target_YSMessagePack;
+        };
+        _______Group_YSMessagePackTests = {
+            isa = PBXGroup;
+            name = 'YSMessagePackTests';
+            path = 'Tests/YSMessagePackTests';
+            sourceTree = '<group>';
+            children = ('__PBXFileRef_Tests/YSMessagePackTests/YSMessagePackTests.swift');
+        };
+        '__PBXFileRef_Tests/YSMessagePackTests/YSMessagePackTests.swift' = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = 'YSMessagePackTests.swift';
+            sourceTree = '<group>';
+        };
+        ______Target_YSMessagePackTests = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = _______Confs_YSMessagePackTests;
+            buildPhases = (CompilePhase_YSMessagePackTests, ___LinkPhase_YSMessagePackTests);
+            buildRules = ();
+            dependencies = (__Dependency_YSMessagePack);
+            name = 'YSMessagePackTests';
+            productName = YSMessagePackTests;
+            productReference = _____Product_YSMessagePackTests;
+            productType = 'com.apple.product-type.bundle.unit-test';
+        };
+        _____Product_YSMessagePackTests = {
+            isa = PBXFileReference;
+            explicitFileType = 'compiled.mach-o.wrapper.cfbundle';
+            path = 'YSMessagePackTests.xctest';
+            sourceTree = BUILT_PRODUCTS_DIR;
+        };
+        CompilePhase_YSMessagePackTests = {
+            isa = PBXSourcesBuildPhase;
+            files = ('__src_cc_ref_Tests/YSMessagePackTests/YSMessagePackTests.swift');
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        '__src_cc_ref_Tests/YSMessagePackTests/YSMessagePackTests.swift' = {
+            isa = PBXBuildFile;
+            fileRef = '__PBXFileRef_Tests/YSMessagePackTests/YSMessagePackTests.swift';
+        };
+        ___LinkPhase_YSMessagePackTests = {
+            isa = PBXFrameworksBuildPhase;
+            files = (_LinkFileRef_YSMessagePack_via_YSMessagePackTests);
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        _LinkFileRef_YSMessagePack_via_YSMessagePackTests = {
+            isa = PBXBuildFile;
+            fileRef = _____Product_YSMessagePack;
+        };
+        _______Confs_YSMessagePackTests = {
+            isa = XCConfigurationList;
+            buildConfigurations = (___DebugConf_YSMessagePackTests, _ReleaseConf_YSMessagePackTests);
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Debug;
+        };
+        ___DebugConf_YSMessagePackTests = {
+            isa = XCBuildConfiguration;
+            buildSettings = { LD_RUNPATH_SEARCH_PATHS = '@loader_path/../Frameworks'; FRAMEWORK_SEARCH_PATHS = '$(PLATFORM_DIR)/Developer/Library/Frameworks'; OTHER_SWIFT_FLAGS = '$(inherited)'; INFOPLIST_FILE = 'YSMessagePack.xcodeproj/YSMessagePackTests_Info.plist'; SWIFT_OPTIMIZATION_LEVEL = '-Onone'; EMBEDDED_CONTENT_CONTAINS_SWIFT = 'YES'; OTHER_LDFLAGS = '$(inherited)'; SWIFT_VERSION = '3.0'; };
+            name = Debug;
+        };
+        _ReleaseConf_YSMessagePackTests = {
+            isa = XCBuildConfiguration;
+            buildSettings = { LD_RUNPATH_SEARCH_PATHS = '@loader_path/../Frameworks'; FRAMEWORK_SEARCH_PATHS = '$(PLATFORM_DIR)/Developer/Library/Frameworks'; OTHER_SWIFT_FLAGS = '$(inherited)'; INFOPLIST_FILE = 'YSMessagePack.xcodeproj/YSMessagePackTests_Info.plist'; EMBEDDED_CONTENT_CONTAINS_SWIFT = 'YES'; OTHER_LDFLAGS = '$(inherited)'; SWIFT_VERSION = '3.0'; };
+            name = Release;
+        };
+        __Dependency_YSMessagePackTests = {
+            isa = PBXTargetDependency;
+            target = ______Target_YSMessagePackTests;
+        };
+        '__PBXFileRef_YSMessagePack.xcodeproj/Configs/Project.xcconfig' = {
+            isa = PBXFileReference;
+            lastKnownFileType = text.xcconfig;
+            path = 'YSMessagePack.xcodeproj/Configs/Project.xcconfig';
+            sourceTree = '<group>';
+        };
+        _____Configs_ = {
+            isa = PBXGroup;
+            children = ('__PBXFileRef_YSMessagePack.xcodeproj/Configs/Project.xcconfig');
+            name = Configs;
+            sourceTree = '<group>';
+        };
+        _____Sources_ = {
+            isa = PBXGroup;
+            children = (_______Group_YSMessagePack);
+            name = Sources;
+            sourceTree = '<group>';
+        };
+        _______Tests_ = {
+            isa = PBXGroup;
+            children = (_______Group_YSMessagePackTests);
+            name = Tests;
+            sourceTree = '<group>';
+        };
+       TestProducts_ = {
+            isa = PBXGroup;
+            children = (_____Product_YSMessagePackTests);
+            name = Tests;
+            sourceTree = '<group>';
+        };
+        ____Products_ = {
+            isa = PBXGroup;
+            children = (TestProducts_, _____Product_YSMessagePack);
+            name = Products;
+            sourceTree = '<group>';
+        };
+        _______Debug_ = {
+            isa = XCBuildConfiguration;
+            baseConfigurationReference = '__PBXFileRef_YSMessagePack.xcodeproj/Configs/Project.xcconfig';
+            buildSettings = {};
+            name = Debug;
+        };
+        _____Release_ = {
+            isa = XCBuildConfiguration;
+            baseConfigurationReference = '__PBXFileRef_YSMessagePack.xcodeproj/Configs/Project.xcconfig';
+            buildSettings = {};
+            name = Release;
+        };
+        ___RootConfs_ = {
+            isa = XCConfigurationList;
+            buildConfigurations = (_______Debug_, _____Release_);
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Debug;
+        };
+    };
+}

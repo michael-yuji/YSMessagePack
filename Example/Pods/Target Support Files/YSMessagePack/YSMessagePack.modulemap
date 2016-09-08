@@ -1,6 +1,0 @@
-framework module YSMessagePack {
-  umbrella header "YSMessagePack-umbrella.h"
-
-  export *
-  module * { export * }
-}
