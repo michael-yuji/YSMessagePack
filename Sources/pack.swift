@@ -166,11 +166,11 @@ extension StringLiteralType : Packable {
             var lengthByte: [UInt8] = []
             
             #if arch(arm) || arch(i386)
-                switch data.length {
-                case (0b00000...0b11111) :   prefix = UInt8(0b101_00000 + data.length)
-                case (0b100000...0xFF)   :   prefix = 0xd9; lengthByte.append(UInt8(data.length))
-                case (0x100...0xFFFF)    :   prefix = 0xda; lengthByte  += [UInt8(data.length / 0x100),
-                                                                            UInt8(data.length % 0x100)]
+                switch data.count {
+                case (0b00000...0b11111) :   prefix = UInt8(0b101_00000 + data.count)
+                case (0b100000...0xFF)   :   prefix = 0xd9; lengthByte.append(UInt8(data.count))
+                case (0x100...0xFFFF)    :   prefix = 0xda; lengthByte  += [UInt8(data.count / 0x100),
+                                                                            UInt8(data.count % 0x100)]
                 default: throw PackingError.dataEncodingError
                 }
             #else
