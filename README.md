@@ -12,12 +12,12 @@ YSMessagePack is a messagePack packer/unpacker written in swift (swift 3 ready).
 
 
 ## Version
- 1.6
+ 1.6.2 (Dropped swift 2 support, swift 3 support only from now on)
 
 ## Installation
 
 - Simply add files under `YSMessagePack/Classes` to your project, 
-- use cocoapod, add "pod `'YSMessagePack', '~> 1.6.0'` to your podfile  
+- use cocoapod, add "pod `'YSMessagePack', '~> 1.6.2'` to your podfile  
 
 # Usage 
 ### Pack:
